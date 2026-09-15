@@ -1,0 +1,59 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Classes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Classes</h1>
+        <p>This page belongs to the Classes app.</p>
+    </div>
+
+    <div class="actions">
+        <a class="button" href="{% url 'classes:create' %}">
+            Create Class
+        </a>
+
+        <a class="button secondary" href="{% url 'students:list' %}">
+            Go to Students App
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Subject Code</th>
+                <th>Subject Name</th>
+                <th>Schedule</th>
+                <th>Room</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for class_record in classes %}
+                <tr>
+                    <td>{{ class_record.subject_code }}</td>
+                    <td>{{ class_record.subject_name }}</td>
+                    <td>{{ class_record.schedule|default:"â€”" }}</td>
+                    <td>{{ class_record.room|default:"â€”" }}</td>
+                    <td>
+                        <a href="{% url 'classes:detail' class_record.id %}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No classes found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="{% static 'js/classes/list.js' %}"></script>
+{% endblock %}

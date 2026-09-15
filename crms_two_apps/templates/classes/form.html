@@ -1,0 +1,31 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Create Class{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Create Class</h1>
+        <p>POST â†’ Redirect â†’ GET demonstration.</p>
+    </div>
+</div>
+
+<div class="card form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <div class="actions">
+            <button class="button" type="submit">
+                Save Class
+            </button>
+
+            <a class="button secondary"
+               href="{% url 'classes:list' %}">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

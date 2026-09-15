@@ -1,0 +1,58 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Profile - DocTient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h2>User Profile</h2>
+            <p>Update your personal information and biography.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="profile-form">
+            {% csrf_token %}
+            
+            <div class="avatar-section">
+                <div class="avatar-preview">
+                    {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" alt="Profile Photo" id="avatarImg">
+                    {% else %}
+                        <div class="avatar-placeholder" id="avatarImg">No Image</div>
+                    {% endif %}
+                </div>
+                <div class="avatar-upload">
+                    <label for="profile_image" class="file-label">Upload Profile Picture</label>
+                    <input type="file" id="profile_image" name="profile_image" accept="image/*">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" value="{{ request.user.username }}" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ profile.full_name|default:'' }}" placeholder="e.g. Juan Dela Cruz">
+            </div>
+
+            <div class="form-group">
+                <label for="bio">Biography</label>
+                <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself...">{{ profile.bio|default:'' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/profile/profile.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,23 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Log in | DocTient{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="card form-card">
+        <h1>Welcome to DocTient</h1>
+        <p>Log in to manage your healthcare information.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            <button class="button" type="submit">Log in</button>
+        </form>
+
+        <p>New to DocTient? <a href="{% url 'register' %}">Create an account</a>.</p>
+    </div>
+</section>
+{% endblock %}

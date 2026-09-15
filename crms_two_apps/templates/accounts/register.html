@@ -1,0 +1,21 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Register | DocTient{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="card form-card">
+        <h1>Create your DocTient account</h1>
+        <p>Register to access your healthcare workspace.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="actions">
+                <button class="button" type="submit">Register</button>
+                <a class="button secondary" href="{% url 'login' %}">Back to Login</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

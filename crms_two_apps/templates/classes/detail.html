@@ -1,0 +1,148 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ class_record.subject_code }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ class_record.subject_code }}</h1>
+        <p>{{ class_record.subject_name }}</p>
+    </div>
+
+    <div class="actions">
+        <a class="button secondary"
+           href="{% url 'classes:list' %}">
+            Back to Classes
+        </a>
+
+        <a class="button secondary"
+           href="{% url 'students:by_class' class_record.id %}">
+            View Students Page
+        </a>
+    </div>
+</div>
+
+<div class="grid two">
+    <div class="card">
+        <h2>Class Information</h2>
+
+        <dl>
+            <dt>Subject Code</dt>
+            <dd>{{ class_record.subject_code }}</dd>
+
+            <dt>Subject Name</dt>
+            <dd>{{ class_record.subject_name }}</dd>
+
+            <dt>Schedule</dt>
+            <dd>{{ class_record.schedule|default:"â€”" }}</dd>
+
+            <dt>Room</dt>
+            <dd>{{ class_record.room|default:"â€”" }}</dd>
+        </dl>
+    </div>
+
+    <div class="card">
+        <h2>Load Students with JavaScript</h2>
+
+        <p>
+            This button calls a JSON endpoint using fetch().
+        </p>
+
+        <button
+            id="loadStudentsButton"
+            class="button"
+            type="button"
+            data-url="{% url 'classes:students_json' class_record.id %}">
+            Load Students
+        </button>
+
+        <div id="jsonStudentResult" class="result-box">
+            No data loaded yet.
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <div>
+            <h2>Currently Enrolled</h2>
+            <p>
+                Server-rendered data from the Classes view.
+            </p>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Student App</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for enrollment in enrollments %}
+                <tr>
+                    <td>{{ enrollment.student.student_id }}</td>
+                    <td>
+                        {{ enrollment.student.first_name }}
+                        {{ enrollment.student.last_name }}
+                    </td>
+                    <td>
+                        <a href="{% url 'students:detail' enrollment.student.id %}">
+                            View Student
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">
+                        No students enrolled.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Enroll a Student with JavaScript</h2>
+
+    <p>
+        This demonstrates a JavaScript POST request to a Django endpoint.
+    </p>
+
+    <label for="studentSelect">Student</label>
+    <select id="studentSelect">
+        <option value="">Select a student</option>
+
+        {% for student in available_students %}
+            <option value="{{ student.id }}">
+                {{ student.student_id }} â€”
+                {{ student.first_name }} {{ student.last_name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button
+        id="enrollStudentButton"
+        class="button"
+        type="button"
+        data-url="{% url 'classes:enroll' class_record.id %}">
+        Enroll
+    </button>
+
+    <div id="enrollmentResult" class="result-box">
+        No enrollment action yet.
+    </div>
+</div>
+
+<script>
+    window.CRMS = {
+        csrfToken: "{{ csrf_token }}"
+    };
+</script>
+<script src="{% static 'js/classes/detail.js' %}"></script>
+{% endblock %}
