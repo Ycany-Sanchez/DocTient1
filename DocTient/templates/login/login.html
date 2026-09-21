@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DocTient</title>
+    <title>Sign In - DocTient</title>
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
 </head>
 <body class="auth-page">
     <div class="auth-card">
         <div class="auth-header">
-            <h2>Sign In to DocTient</h2>
-            <p>Welcome back! Please enter your details.</p>
+            <span class="auth-brand-logo">DocTient</span>
+            <h2>Welcome Back</h2>
+            <p>Sign in to access your healthcare records</p>
         </div>
 
         {% if error %}
@@ -23,17 +24,17 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
         </form>
 
         <div class="auth-footer">
-            <p>Don't have an account? <a href="{% url 'register:register' %}">Create account</a></p>
+            Don't have an account? <a href="{% url 'register:register' %}">Create account</a>
         </div>
     </div>
     <script src="{% static 'js/login/login.js' %}"></script>

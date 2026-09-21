@@ -1,81 +1,170 @@
 ﻿.home-container {
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
 }
 
 .welcome-hero {
-    background: #ffffff;
-    border: 1px solid var(--slate-200);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
-    padding: 32px 36px;
-    margin-bottom: 28px;
-    box-shadow: var(--shadow-subtle);
+    padding: 38px 44px;
+    margin-bottom: 32px;
+    box-shadow: var(--glass-shadow);
+    animation: fadeInUp 0.5s var(--ease-smooth) both;
     position: relative;
-    border-left: 4px solid var(--primary);
+    overflow: hidden;
+}
+
+.welcome-hero::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(139, 92, 246, 0.15) 50%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(20px);
+    pointer-events: none;
+    animation: floatOrb 8s ease-in-out infinite;
+}
+
+.welcome-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0284c7;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
 }
 
 .welcome-hero h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    color: var(--slate-900);
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.welcome-hero h1 span {
+    background: linear-gradient(135deg, #0284c7, #0d9488);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .welcome-hero .subtitle {
-    color: var(--slate-500);
-    font-size: 0.95rem;
-    line-height: 1.5;
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 650px;
+    line-height: 1.6;
 }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
 }
 
 .dashboard-card {
-    background: #ffffff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    box-shadow: var(--shadow-subtle);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 32px 30px;
+    box-shadow: var(--glass-shadow);
     display: flex;
     flex-direction: column;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: all 0.3s var(--ease-smooth);
+    animation: fadeInUp 0.5s var(--ease-smooth) both;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card:nth-child(1) {
+    animation-delay: 0.08s;
+}
+
+.dashboard-card:nth-child(2) {
+    animation-delay: 0.16s;
 }
 
 .dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lift);
-    border-color: var(--primary-border);
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: var(--glass-shadow-lift);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+.card-pill-tag {
+    align-self: flex-start;
+    padding: 4px 10px;
+    font-size: 0.725rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    background: rgba(14, 165, 233, 0.1);
+    color: #0284c7;
+    margin-bottom: 16px;
 }
 
 .dashboard-card h3 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--slate-900);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main);
     margin-bottom: 8px;
+    transition: color 0.2s ease;
+}
+
+.dashboard-card:hover h3 {
+    color: #0284c7;
 }
 
 .dashboard-card p {
-    color: var(--slate-600);
-    font-size: 0.9rem;
-    line-height: 1.55;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
     flex-grow: 1;
-    margin-bottom: 20px;
+    margin-bottom: 26px;
 }
 
 .card-link {
-    color: var(--primary);
-    font-weight: 600;
-    font-size: 0.875rem;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    color: #0284c7;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+    transition: all 0.25s var(--ease-smooth);
 }
 
-.card-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+.card-link span {
+    display: inline-block;
+    transition: transform 0.25s var(--ease-spring);
+}
+
+.dashboard-card:hover .card-link {
+    background: linear-gradient(135deg, #06b6d4, #0284c7);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 8px 20px -2px rgba(2, 132, 199, 0.35);
+}
+
+.dashboard-card:hover .card-link span {
+    transform: translateX(5px);
 }

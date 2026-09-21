@@ -10,21 +10,24 @@
 {% block content %}
 <div class="home-container">
     <div class="welcome-hero">
-        <h1>Welcome to DocTient, {{ request.user.username }}</h1>
-        <p class="subtitle">Classroom & Student Records Management System with Vertical Slicing Architecture</p>
+        <div class="welcome-badge">Workspace Overview</div>
+        <h1>Welcome back, <span>{{ request.user.username }}</span></h1>
+        <p class="subtitle">DocTient Records &amp; Medical-grade Management System.</p>
     </div>
 
     <div class="dashboard-grid">
         <div class="dashboard-card">
+            <span class="card-pill-tag">Profile Details</span>
             <h3>Your Profile</h3>
-            <p>View and manage your personal details, bio, and profile avatar.</p>
-            <a href="{% url 'profile:profile' %}" class="card-link">View Profile &rarr;</a>
+            <p>View personal credentials, biography, and manage your account avatar.</p>
+            <a href="{% url 'profile:profile' %}" class="card-link">Open Profile <span>&rarr;</span></a>
         </div>
 
         <div class="dashboard-card">
+            <span class="card-pill-tag">Preferences</span>
             <h3>Settings</h3>
-            <p>Customize your experience with dark mode and notification preferences.</p>
-            <a href="{% url 'user_settings:settings' %}" class="card-link">Configure Settings &rarr;</a>
+            <p>Configure interface options, dark mode toggle, and email notifications.</p>
+            <a href="{% url 'user_settings:settings' %}" class="card-link">Open Settings <span>&rarr;</span></a>
         </div>
     </div>
 </div>
