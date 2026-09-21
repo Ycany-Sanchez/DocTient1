@@ -1,67 +1,85 @@
 ﻿.auth-page {
+    min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    padding: 24px;
 }
+
 .auth-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 2.5rem;
+    background: #ffffff;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
     width: 100%;
-    max-width: 420px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
+    max-width: 400px;
+    box-shadow: var(--shadow-lift);
 }
+
+.auth-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
 .auth-header h2 {
-    margin-bottom: 0.5rem;
-    font-size: 1.6rem;
-    color: #1e293b;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
 }
+
 .auth-header p {
-    color: #64748b;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
+    color: var(--slate-500);
+    font-size: 0.9rem;
 }
+
 .auth-form .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 18px;
 }
+
 .auth-form label {
     display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.4rem;
-    color: #334155;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--slate-700);
+    margin-bottom: 6px;
 }
+
 .auth-form input {
     width: 100%;
-    padding: 0.65rem 0.85rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.95rem;
+    padding: 9px 12px;
+    border: 1px solid var(--slate-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.925rem;
+    color: var(--slate-800);
+    background-color: #ffffff;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+
 .auth-form input:focus {
-    border-color: #3b82f6;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
 }
+
 .btn-block {
     width: 100%;
-    padding: 0.75rem;
-    margin-top: 0.5rem;
+    padding: 10px 16px;
+    font-size: 0.925rem;
     font-weight: 600;
+    margin-top: 6px;
 }
+
 .auth-footer {
-    margin-top: 1.5rem;
+    margin-top: 22px;
     text-align: center;
-    font-size: 0.9rem;
-    color: #64748b;
+    font-size: 0.875rem;
+    color: var(--slate-500);
 }
+
 .auth-footer a {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 500;
-}
-.auth-footer a:hover {
-    text-decoration: underline;
+    color: var(--primary);
+    font-weight: 600;
 }
