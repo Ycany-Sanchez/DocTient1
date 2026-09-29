@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "apps.home",
     "apps.user_profile",
     "apps.user_settings",
+    "apps.clinic",
 ]
 
 MIDDLEWARE = [
