@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Messages - DocTient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="msg-container">
+    <div class="welcome-hero msg-hero">
+        <div class="welcome-badge">Direct Messages {% if total_unread %}· {{ total_unread }} unread{% endif %}</div>
+        <h1>Messages</h1>
+        <p class="subtitle">{% if role == "patient" %}Chat with your doctors.{% else %}Chat with your patients.{% endif %} Patients ↔ doctors only.</p>
+    </div>
+
+    <div class="msg-grid">
+        <div class="dashboard-card msg-list">
+            <span class="card-pill-tag">Conversations · {{ conversations|length }}</span>
+            {% if conversations %}
+            <ul class="conv-list">
+                {% for c in conversations %}
+                <li class="{% if active_user and c.user.id == active_user.id %}active{% endif %}">
+                    <a href="?with={{ c.user.username }}">
+                        <strong>@{{ c.user.username }}</strong>
+                        {% if c.unread %}<span class="badge-unread">{{ c.unread }}</span>{% endif %}
+                        <small>{{ c.last_message.content|truncatechars:60 }}</small>
+                        <small class="muted">{{ c.last_message.sent_at|date:"M d, H:i" }}</small>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty">No conversations yet. Start one on the right.</p>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card msg-thread">
+            {% if active_user %}
+            <span class="card-pill-tag">Chat with @{{ active_user.username }}</span>
+            <div class="thread">
+                {% for m in thread %}
+                <div class="bubble {% if m.sender_id == request.user.id %}mine{% else %}theirs{% endif %}">
+                    <p>{{ m.content }}</p>
+                    <small>{{ m.sent_at|date:"M d, H:i" }}{% if m.sender_id == request.user.id %} · {% if m.is_read %}read{% else %}sent{% endif %}{% endif %}</small>
+                </div>
+                {% empty %}
+                <p class="empty">No messages yet. Say hello below.</p>
+                {% endfor %}
+            </div>
+            <form method="post" class="send-row">
+                {% csrf_token %}
+                <input type="hidden" name="recipient" value="{{ active_user.username }}">
+                <input type="text" name="content" placeholder="Write a message..." maxlength="2000" required autofocus>
+                <button type="submit" class="btn">Send</button>
+            </form>
+            {% else %}
+            <span class="card-pill-tag">New message</span>
+            <h3>Start a conversation</h3>
+            <form method="post" class="new-msg-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="recipient">To ({% if role == "patient" %}doctor{% else %}patient{% endif %})</label>
+                    <input type="text" id="recipient" name="recipient" list="recipientList" placeholder="username..." required>
+                    <datalist id="recipientList">
+                        {% for u in recipients %}<option value="{{ u.username }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label for="content">Message</label>
+                    <textarea id="content" name="content" rows="3" placeholder="Write a message..." required></textarea>
+                </div>
+                <button type="submit" class="btn">Send</button>
+            </form>
+            <p class="hint">Or pick a conversation on the left.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
