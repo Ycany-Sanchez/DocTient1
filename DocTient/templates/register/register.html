@@ -30,6 +30,27 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Choose a secure password" required>
             </div>
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="e.g. Juan Dela Cruz">
+            </div>
+            <div class="form-group">
+                <label>I am a</label>
+                <div class="role-picker">
+                    <label class="role-option">
+                        <input type="radio" name="role" value="patient" checked>
+                        <span><strong>Patient</strong><small>View my own vitals</small></span>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="doctor">
+                        <span><strong>Doctor</strong><small>View my patients' vitals</small></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" id="specialtyGroup" style="display:none;">
+                <label for="med_specialty">Medical Specialty (doctors)</label>
+                <input type="text" id="med_specialty" name="med_specialty" placeholder="e.g. Cardiology">
+            </div>
             <button type="submit" class="btn btn-primary btn-block">Create Account</button>
         </form>
 
@@ -37,6 +58,14 @@
             Already registered? <a href="{% url 'login:login' %}">Sign in here</a>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('input[name="role"]').forEach((el) => {
+            el.addEventListener("change", () => {
+                document.getElementById("specialtyGroup").style.display =
+                    document.querySelector('input[name="role"]:checked').value === "doctor" ? "block" : "none";
+            });
+        });
+    </script>
     <script src="{% static 'js/register/register.js' %}"></script>
 </body>
 </html>

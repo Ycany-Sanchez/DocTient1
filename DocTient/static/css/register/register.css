@@ -110,3 +110,8 @@
     color: #0284c7;
     font-weight: 700;
 }
+
+.role-picker { display: flex; gap: 10px; }
+.role-option { flex: 1; display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border: 1px solid rgba(226,232,240,.9); border-radius: 12px; background: rgba(255,255,255,.8); cursor: pointer; font-weight: 400; }
+.role-option strong { display: block; font-size: .88rem; }
+.role-option small { color: var(--text-muted); font-size: .75rem; }

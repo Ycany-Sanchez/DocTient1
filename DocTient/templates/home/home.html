@@ -15,6 +15,128 @@
         <p class="subtitle">DocTient Records &amp; Medical-grade Management System.</p>
     </div>
 
+    {% if needs_role %}
+    <div class="dashboard-card role-card">
+        <span class="card-pill-tag">Choose your role</span>
+        <h3>Are you a Patient or a Doctor?</h3>
+        <p>Pick once — patients see their own vitals, doctors see their patients' vitals.</p>
+        <form method="post" class="role-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="e.g. Juan Dela Cruz" value="{{ request.user.username }}">
+            </div>
+            <div class="role-picker">
+                <label class="role-option"><input type="radio" name="role" value="patient" checked><span><strong>Patient</strong></span></label>
+                <label class="role-option"><input type="radio" name="role" value="doctor"><span><strong>Doctor</strong></span></label>
+            </div>
+            <div class="form-group" id="specialtyGroup" style="display:none; margin-top:12px;">
+                <label for="med_specialty">Medical Specialty</label>
+                <input type="text" id="med_specialty" name="med_specialty" placeholder="e.g. Cardiology">
+            </div>
+            <button type="submit" class="btn" style="margin-top:14px;">Save Role</button>
+        </form>
+    </div>
+    {% elif is_patient %}
+    <div class="dashboard-card">
+        <span class="card-pill-tag">My Vitals · Read-only</span>
+        <h3>{{ patient.full_name|default:request.user.username }} — Latest Reading</h3>
+        {% if latest %}
+        <div class="latest-grid">
+            <div class="metric"><span class="metric-label">BP</span><strong>{% if latest.systolic %}{{ latest.systolic }}/{{ latest.diastolic|default:"–" }}{% else %}–{% endif %}</strong><small>mmHg</small></div>
+            <div class="metric"><span class="metric-label">Heart</span><strong>{{ latest.heart_rate|default:"–" }}</strong><small>bpm</small></div>
+            <div class="metric"><span class="metric-label">Temp</span><strong>{{ latest.temperature_celsius|default:"–" }}</strong><small>°C</small></div>
+            <div class="metric"><span class="metric-label">SpO₂</span><strong>{{ latest.oxygen_saturation|default:"–" }}</strong><small>%</small></div>
+        </div>
+        <p class="recorded-at">Recorded {{ latest.recorded_at|date:"M d, Y H:i" }}{% if latest.monitoring_status %} · {{ latest.monitoring_status }}{% endif %}</p>
+        {% if latest.patient_notes %}<p class="latest-notes">“{{ latest.patient_notes }}”</p>{% endif %}
+        {% else %}
+        <p class="empty">No vitals recorded yet. Your doctor will add readings for you.</p>
+        {% endif %}
+    </div>
+
+    <div class="dashboard-card">
+        <span class="card-pill-tag">History · {{ vitals|length }}</span>
+        <h3>My Vitals History</h3>
+        {% if vitals %}
+        <div class="table-wrap"><table class="vitals-table">
+            <thead><tr><th>Date</th><th>BP</th><th>HR</th><th>Temp</th><th>SpO₂</th><th>Weight</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for v in vitals %}
+            <tr>
+                <td class="nowrap">{{ v.recorded_at|date:"M d, H:i" }}</td>
+                <td>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</td>
+                <td>{{ v.heart_rate|default:"–" }}</td>
+                <td>{{ v.temperature_celsius|default:"–" }}</td>
+                <td>{{ v.oxygen_saturation|default:"–" }}</td>
+                <td>{{ v.weight_kg|default:"–" }}</td>
+                <td>{{ v.monitoring_status|default:"–" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<p class="empty">Nothing to show yet.</p>{% endif %}
+    </div>
+    {% elif is_doctor %}
+    <div class="dashboard-card">
+        <span class="card-pill-tag">Doctor · {{ doctor.full_name }}</span>
+        <h3>My Patients ({{ connected_ids|length }})</h3>
+        <form method="get" class="search-row">
+            <input type="text" name="q" placeholder="Search patients by name or username..." value="{{ query }}">
+            <button type="submit" class="btn btn-secondary">Search</button>
+        </form>
+        <form method="post" class="search-row">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_patient">
+            <input type="text" name="username" placeholder="Add patient by username...">
+            <button type="submit" class="btn">Add</button>
+        </form>
+        {% if patients %}
+        <div class="table-wrap"><table class="vitals-table">
+            <thead><tr><th>Patient</th><th>Latest BP</th><th>HR</th><th>SpO₂</th><th>Recorded</th><th></th></tr></thead>
+            <tbody>
+            {% for p in patients %}
+            <tr>
+                <td><strong>{{ p.full_name }}</strong><br><small>@{{ p.user.username }}</small>{% if p.is_connected %} <span class="badge">My patient</span>{% endif %}</td>
+                <td>{% if p.latest_vital and p.latest_vital.systolic %}{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic|default:"–" }}{% else %}–{% endif %}</td>
+                <td>{{ p.latest_vital.heart_rate|default:"–" }}</td>
+                <td>{{ p.latest_vital.oxygen_saturation|default:"–" }}</td>
+                <td class="nowrap">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
+                <td><a href="?patient_id={{ p.id }}{% if query %}&q={{ query }}{% endif %}">View</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<p class="empty">No patients found.</p>{% endif %}
+    </div>
+
+    {% if selected_patient %}
+    <div class="dashboard-card">
+        <span class="card-pill-tag">Patient Detail</span>
+        <h3>{{ selected_patient.full_name }} — Vitals ({{ selected_vitals|length }})</h3>
+        {% if selected_vitals %}
+        <div class="table-wrap"><table class="vitals-table">
+            <thead><tr><th>Date</th><th>BP</th><th>HR</th><th>Temp</th><th>SpO₂</th><th>Weight</th><th>Status</th><th>Notes</th></tr></thead>
+            <tbody>
+            {% for v in selected_vitals %}
+            <tr>
+                <td class="nowrap">{{ v.recorded_at|date:"M d, H:i" }}</td>
+                <td>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</td>
+                <td>{{ v.heart_rate|default:"–" }}</td>
+                <td>{{ v.temperature_celsius|default:"–" }}</td>
+                <td>{{ v.oxygen_saturation|default:"–" }}</td>
+                <td>{{ v.weight_kg|default:"–" }}</td>
+                <td>{{ v.monitoring_status|default:"–" }}</td>
+                <td>{{ v.patient_notes|default:"–"|truncatechars:40 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<p class="empty">No vitals for this patient yet.</p>{% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+
     <div class="dashboard-grid">
         <div class="dashboard-card">
             <span class="card-pill-tag">Profile Details</span>
@@ -35,4 +157,12 @@
 
 {% block extra_js %}
 <script src="{% static 'js/home/home.js' %}"></script>
+<script>
+document.querySelectorAll('input[name="role"]').forEach((el) => {
+    el.addEventListener("change", () => {
+        const g = document.getElementById("specialtyGroup");
+        if (g) g.style.display = document.querySelector('input[name="role"]:checked').value === "doctor" ? "block" : "none";
+    });
+});
+</script>
 {% endblock %}

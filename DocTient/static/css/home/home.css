@@ -168,3 +168,32 @@
 .dashboard-card:hover .card-link span {
     transform: translateX(5px);
 }
+
+/* Vitals dashboards (read-only) + role picker */
+.dashboard-card { margin-bottom: 24px; }
+.dashboard-grid .dashboard-card { margin-bottom: 0; }
+.role-card:hover { transform: none; }
+.role-form { width: 100%; }
+.role-form .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+.role-form input[type="text"] { width: 100%; padding: 10px 14px; border: 1px solid rgba(203,213,225,.8); border-radius: 10px; font-family: inherit; }
+.role-picker { display: flex; gap: 12px; flex-wrap: wrap; }
+.role-option { flex: 1; min-width: 160px; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid rgba(226,232,240,.9); border-radius: 14px; background: rgba(255,255,255,.8); cursor: pointer; }
+.role-option strong { display: block; }
+.role-option small { color: var(--text-muted); }
+.latest-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 8px; }
+@media (max-width: 640px) { .latest-grid { grid-template-columns: 1fr 1fr; } }
+.metric { background: rgba(248,250,252,.85); border: 1px solid rgba(226,232,240,.9); border-radius: 16px; padding: 12px; text-align: center; }
+.metric-label { display: block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.metric strong { font-size: 1.25rem; }
+.metric small { display: block; color: var(--text-soft); font-size: .75rem; }
+.recorded-at { font-size: .82rem; color: var(--text-muted); margin-bottom: 4px; }
+.latest-notes { font-style: italic; margin-bottom: 0; }
+.empty { color: var(--text-muted); margin-bottom: 0; }
+.table-wrap { overflow-x: auto; }
+.vitals-table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+.vitals-table th, .vitals-table td { padding: 10px 12px; border-bottom: 1px solid rgba(226,232,240,.8); text-align: left; vertical-align: top; }
+.vitals-table th { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.nowrap { white-space: nowrap; }
+.search-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.search-row input { flex: 1; padding: 10px 14px; border: 1px solid rgba(203,213,225,.8); border-radius: 9999px; font-family: inherit; }
+.badge { display: inline-block; font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; background: rgba(16,185,129,.12); color: #047857; border: 1px solid rgba(16,185,129,.3); }
