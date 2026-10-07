@@ -39,7 +39,7 @@
     </div>
     {% elif is_patient %}
     <div class="dashboard-card">
-        <span class="card-pill-tag">My Vitals · Read-only</span>
+        <span class="card-pill-tag">My Vitals</span>
         <h3>{{ patient.full_name|default:request.user.username }} — Latest Reading</h3>
         {% if latest %}
         <div class="latest-grid">
@@ -136,22 +136,6 @@
     </div>
     {% endif %}
     {% endif %}
-
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <span class="card-pill-tag">Profile Details</span>
-            <h3>Your Profile</h3>
-            <p>View personal credentials, biography, and manage your account avatar.</p>
-            <a href="{% url 'profile:profile' %}" class="card-link">Open Profile <span>&rarr;</span></a>
-        </div>
-
-        <div class="dashboard-card">
-            <span class="card-pill-tag">Preferences</span>
-            <h3>Settings</h3>
-            <p>Configure interface options, dark mode toggle, and email notifications.</p>
-            <a href="{% url 'user_settings:settings' %}" class="card-link">Open Settings <span>&rarr;</span></a>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
