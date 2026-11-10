@@ -104,6 +104,43 @@ def reports_view(request):
 
         # Chronological readings for trend chart (oldest to newest, max 10)
         trend_readings = list(reversed(vitals[:10]))
+        chart_points = []
+        trend_polyline_points = ""
+        trend_area_path = ""
+        n_points = len(trend_readings)
+
+        if n_points > 0:
+            pad_left = 30
+            pad_right = 30
+            canvas_width = 600
+            usable_width = canvas_width - pad_left - pad_right
+
+            for i, v in enumerate(trend_readings):
+                if n_points == 1:
+                    x = canvas_width / 2
+                else:
+                    x = pad_left + (i / (n_points - 1)) * usable_width
+
+                sys_val = v.systolic if v.systolic is not None else 120
+                # 120 mmHg maps to y=60; 1.8 px per mmHg
+                y = max(18.0, min(108.0, round(60.0 - (sys_val - 120) * 1.8, 1)))
+
+                chart_points.append({
+                    "x": round(x, 1),
+                    "y": y,
+                    "y_label": max(14.0, y - 8),
+                    "systolic": sys_val,
+                    "diastolic": v.diastolic,
+                    "vital": v,
+                })
+
+            trend_polyline_points = " ".join(f"{pt['x']},{pt['y']}" for pt in chart_points)
+            if n_points > 1:
+                trend_area_path = (
+                    f"M {chart_points[0]['x']},{chart_points[0]['y']} "
+                    + " ".join(f"L {pt['x']},{pt['y']}" for pt in chart_points)
+                    + f" L {chart_points[-1]['x']},120 L {chart_points[0]['x']},120 Z"
+                )
 
         return render(request, "reports/reports.html", {
             "is_patient": True,
@@ -125,6 +162,9 @@ def reports_view(request):
             "medications": medications,
             "adherence_rate": adherence_rate,
             "trend_readings": trend_readings,
+            "chart_points": chart_points,
+            "trend_polyline_points": trend_polyline_points,
+            "trend_area_path": trend_area_path,
             "latest_vital": latest_vital,
         })
 
