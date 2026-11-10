@@ -36,3 +36,4 @@ class MessagingViewTests(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Message.objects.filter(sender=self.patient_user, recipient=pat2_user).count(), 0)
+
