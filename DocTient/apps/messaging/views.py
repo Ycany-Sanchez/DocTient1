@@ -36,13 +36,16 @@ def messages_view(request):
         Q(sender=request.user) | Q(recipient=request.user)
     ).select_related("sender", "recipient").order_by("-sent_at")[:200]
 
-    # Build conversation list: counterpart -> {user, last_message, unread}.
+    # Build conversation list: counterpart -> {user, last_message, unread, full_name}.
     conversations = {}
     for m in all_mine:
         other = m.recipient if m.sender_id == request.user.id else m.sender
         entry = conversations.get(other.id)
         if entry is None:
-            entry = {"user": other, "last_message": m, "unread": 0}
+            doc = getattr(other, "doctor_profile", None)
+            pat = getattr(other, "patient_profile", None)
+            display_name = (doc.full_name if doc else (pat.full_name if pat else other.username))
+            entry = {"user": other, "last_message": m, "unread": 0, "display_name": display_name}
             conversations[other.id] = entry
         if m.recipient_id == request.user.id and not m.is_read:
             entry["unread"] += 1
@@ -52,11 +55,16 @@ def messages_view(request):
     total_unread = sum(c["unread"] for c in conversation_list)
 
     active_name = (request.GET.get("with") or "").strip()
+    if not active_name and conversation_list:
+        active_name = conversation_list[0]["user"].username
+
     active_user = None
+    active_profile = None
     thread = []
     if active_name:
         try:
             active_user = User.objects.get(username=active_name)
+            active_profile = getattr(active_user, "doctor_profile", None) or getattr(active_user, "patient_profile", None)
         except User.DoesNotExist:
             django_messages.error(request, f"No user '{active_name}'.")
             return redirect("messages:messages")
@@ -103,6 +111,7 @@ def messages_view(request):
         "conversations": conversation_list,
         "total_unread": total_unread,
         "active_user": active_user,
+        "active_profile": active_profile,
         "thread": thread,
         "recipients": _eligible_recipients(request.user, role),
     })

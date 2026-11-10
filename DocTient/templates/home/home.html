@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Home - DocTient{% endblock %}
+{% block title %}Dashboard - DocTient{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
@@ -9,138 +9,498 @@
 
 {% block content %}
 <div class="home-container">
+
+    <!-- =========================================================
+         ROLE PICKER (Only shown once for brand new accounts)
+         ========================================================= -->
+    {% if needs_role %}
     <div class="welcome-hero">
-        <div class="welcome-badge">Workspace Overview</div>
-        <h1>Welcome back, <span>{{ request.user.username }}</span></h1>
-        <p class="subtitle">DocTient Records &amp; Medical-grade Management System.</p>
+        <div class="welcome-badge">Account Setup</div>
+        <h1>Complete Your Profile, <span>{{ request.user.username }}</span></h1>
+        <p class="subtitle">Select your healthcare role to personalize your medical monitoring dashboard.</p>
     </div>
 
-    {% if needs_role %}
     <div class="dashboard-card role-card">
-        <span class="card-pill-tag">Choose your role</span>
-        <h3>Are you a Patient or a Doctor?</h3>
-        <p>Pick once — patients see their own vitals, doctors see their patients' vitals.</p>
+        <span class="card-pill-tag">Role Selection</span>
+        <h3>Are you a Patient or a Medical Doctor?</h3>
+        <p>Patients monitor personal health telemetry; doctors manage patient rosters and prescriptions.</p>
         <form method="post" class="role-form">
             {% csrf_token %}
             <div class="form-group">
-                <label for="full_name">Full Name</label>
-                <input type="text" id="full_name" name="full_name" placeholder="e.g. Juan Dela Cruz" value="{{ request.user.username }}">
+                <label for="full_name">Legal Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="e.g. Juan Dela Cruz" value="{{ request.user.username }}" required>
             </div>
             <div class="role-picker">
-                <label class="role-option"><input type="radio" name="role" value="patient" checked><span><strong>Patient</strong></span></label>
-                <label class="role-option"><input type="radio" name="role" value="doctor"><span><strong>Doctor</strong></span></label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="patient" checked>
+                    <div>
+                        <strong>Patient Profile</strong>
+                        <small>Access personal vitals, prescriptions, and messaging.</small>
+                    </div>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="doctor">
+                    <div>
+                        <strong>Licensed Doctor</strong>
+                        <small>Monitor connected patients, record telemetry, and prescribe.</small>
+                    </div>
+                </label>
             </div>
-            <div class="form-group" id="specialtyGroup" style="display:none; margin-top:12px;">
-                <label for="med_specialty">Medical Specialty</label>
-                <input type="text" id="med_specialty" name="med_specialty" placeholder="e.g. Cardiology">
+            <div class="form-group" id="specialtyGroup" style="display:none; margin-top:14px;">
+                <label for="med_specialty">Medical Specialty & Credentials</label>
+                <input type="text" id="med_specialty" name="med_specialty" placeholder="e.g. Cardiology, Internal Medicine">
             </div>
-            <button type="submit" class="btn" style="margin-top:14px;">Save Role</button>
+            <button type="submit" class="btn" style="margin-top:18px;">Confirm &amp; Enter Dashboard</button>
         </form>
     </div>
+
+    <!-- =========================================================
+         PATIENT DASHBOARD VIEW
+         ========================================================= -->
     {% elif is_patient %}
-    <div class="dashboard-card">
-        <span class="card-pill-tag">My Vitals</span>
-        <h3>{{ patient.full_name|default:request.user.username }} — Latest Reading</h3>
-        {% if latest %}
-        <div class="latest-grid">
-            <div class="metric"><span class="metric-label">BP</span><strong>{% if latest.systolic %}{{ latest.systolic }}/{{ latest.diastolic|default:"–" }}{% else %}–{% endif %}</strong><small>mmHg</small></div>
-            <div class="metric"><span class="metric-label">Heart</span><strong>{{ latest.heart_rate|default:"–" }}</strong><small>bpm</small></div>
-            <div class="metric"><span class="metric-label">Temp</span><strong>{{ latest.temperature_celsius|default:"–" }}</strong><small>°C</small></div>
-            <div class="metric"><span class="metric-label">SpO₂</span><strong>{{ latest.oxygen_saturation|default:"–" }}</strong><small>%</small></div>
+    <div class="welcome-hero">
+        <div class="hero-top-row">
+            <div class="welcome-badge">Patient Telehealth Portal</div>
+            <span class="badge {{ eval_badge }}">Status: {{ eval_status }}</span>
         </div>
-        <p class="recorded-at">Recorded {{ latest.recorded_at|date:"M d, Y H:i" }}{% if latest.monitoring_status %} · {{ latest.monitoring_status }}{% endif %}</p>
-        {% if latest.patient_notes %}<p class="latest-notes">“{{ latest.patient_notes }}”</p>{% endif %}
+        <h1>Welcome back, <span>{{ patient.full_name|default:request.user.username }}</span></h1>
+        <p class="subtitle">Real-time health telemetry, vital sign records, and medication tracking.</p>
+    </div>
+
+    <!-- Live Telemetry Vitals Grid -->
+    <div class="dashboard-card vitals-summary-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Biometric Telemetry</span>
+                <h3>Latest Vital Signs</h3>
+            </div>
+            {% if latest %}
+            <span class="recorded-at-badge">Updated {{ latest.recorded_at|date:"M d, Y - h:i A" }}</span>
+            {% endif %}
+        </div>
+
+        {% if latest %}
+        <div class="vitals-metric-grid">
+            <div class="v-card">
+                <div class="v-icon v-bp">🫀</div>
+                <div class="v-info">
+                    <span class="v-label">Blood Pressure</span>
+                    <strong class="v-value">{% if latest.systolic %}{{ latest.systolic }}<span class="v-slash">/</span>{{ latest.diastolic|default:"–" }}{% else %}–{% endif %}</strong>
+                    <span class="v-unit">mmHg</span>
+                </div>
+            </div>
+
+            <div class="v-card">
+                <div class="v-icon v-hr">💓</div>
+                <div class="v-info">
+                    <span class="v-label">Heart Rate</span>
+                    <strong class="v-value">{{ latest.heart_rate|default:"–" }}</strong>
+                    <span class="v-unit">bpm (resting)</span>
+                </div>
+            </div>
+
+            <div class="v-card">
+                <div class="v-icon v-spo2">🫁</div>
+                <div class="v-info">
+                    <span class="v-label">Oxygen (SpO₂)</span>
+                    <strong class="v-value">{{ latest.oxygen_saturation|default:"–" }}%</strong>
+                    <span class="v-unit">pulse oximetry</span>
+                </div>
+            </div>
+
+            <div class="v-card">
+                <div class="v-icon v-temp">🌡️</div>
+                <div class="v-info">
+                    <span class="v-label">Temperature</span>
+                    <strong class="v-value">{{ latest.temperature_celsius|default:"–" }}°</strong>
+                    <span class="v-unit">Celsius</span>
+                </div>
+            </div>
+
+            <div class="v-card">
+                <div class="v-icon v-weight">⚖️</div>
+                <div class="v-info">
+                    <span class="v-label">Body Weight</span>
+                    <strong class="v-value">{{ latest.weight_kg|default:"–" }}</strong>
+                    <span class="v-unit">kg</span>
+                </div>
+            </div>
+        </div>
+
+        {% if latest.patient_notes %}
+        <div class="clinical-note-callout">
+            <strong>Clinical Note:</strong> “{{ latest.patient_notes }}”
+        </div>
+        {% endif %}
+
         {% else %}
-        <p class="empty">No vitals recorded yet. Your doctor will add readings for you.</p>
+        <div class="empty-state-box">
+            <div class="empty-icon">📊</div>
+            <p><strong>No vital readings logged yet.</strong></p>
+            <p class="empty-sub">Record your first reading below or wait for your supervising physician to record one.</p>
+        </div>
+        {% endif %}
+
+        <!-- Quick Log Self-Reading Toggle -->
+        <details class="quick-log-details">
+            <summary class="btn btn-secondary btn-sm">+ Log New Self-Reading</summary>
+            <form method="post" class="quick-log-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="log_vital">
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label for="systolic">Systolic BP</label>
+                        <input type="number" id="systolic" name="systolic" placeholder="120" min="60" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label for="diastolic">Diastolic BP</label>
+                        <input type="number" id="diastolic" name="diastolic" placeholder="80" min="40" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label for="heart_rate">Heart Rate (bpm)</label>
+                        <input type="number" id="heart_rate" name="heart_rate" placeholder="72" min="30" max="220">
+                    </div>
+                    <div class="form-group">
+                        <label for="oxygen_saturation">SpO₂ (%)</label>
+                        <input type="number" step="0.1" id="oxygen_saturation" name="oxygen_saturation" placeholder="98" min="70" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="temperature_celsius">Temp (°C)</label>
+                        <input type="number" step="0.1" id="temperature_celsius" name="temperature_celsius" placeholder="36.6" min="34" max="43">
+                    </div>
+                    <div class="form-group">
+                        <label for="weight_kg">Weight (kg)</label>
+                        <input type="number" step="0.1" id="weight_kg" name="weight_kg" placeholder="65.0" min="20" max="300">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label for="patient_notes">Symptoms / Daily Note</label>
+                    <input type="text" id="patient_notes" name="patient_notes" placeholder="e.g. Felt relaxed, morning resting reading">
+                </div>
+                <button type="submit" class="btn btn-sm" style="margin-top: 10px;">Save Vitals Entry</button>
+            </form>
+        </details>
+    </div>
+
+    <!-- Active Medications Tracker -->
+    <div class="dashboard-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Prescription Adherence</span>
+                <h3>Active Medications</h3>
+            </div>
+            <span class="badge badge-info">{{ medications|length }} Prescribed</span>
+        </div>
+
+        {% if medications %}
+        <div class="meds-list">
+            {% for m in medications %}
+            <div class="med-item {% if m.taken_today %}med-taken{% endif %}">
+                <div class="med-icon">💊</div>
+                <div class="med-info">
+                    <h4>{{ m.medication }}</h4>
+                    <p class="med-dose"><strong>{{ m.dosage }}</strong> · {{ m.frequency }}{% if m.scheduled_time %} at {{ m.scheduled_time|time:"h:i A" }}{% endif %}</p>
+                    {% if m.doctor %}
+                    <small class="med-doc">Prescribed by {{ m.doctor.full_name }}</small>
+                    {% endif %}
+                </div>
+                <div class="med-actions">
+                    {% if m.taken_today %}
+                    <span class="badge badge-success">✓ Taken Today</span>
+                    {% else %}
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_medication_taken">
+                        <input type="hidden" name="medication_id" value="{{ m.id }}">
+                        <button type="submit" class="btn btn-sm btn-success">Mark as Taken</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty">No active prescriptions on file.</p>
         {% endif %}
     </div>
 
-    <div class="dashboard-card">
-        <span class="card-pill-tag">History · {{ vitals|length }}</span>
-        <h3>My Vitals History</h3>
-        {% if vitals %}
-        <div class="table-wrap"><table class="vitals-table">
-            <thead><tr><th>Date</th><th>BP</th><th>HR</th><th>Temp</th><th>SpO₂</th><th>Weight</th><th>Status</th></tr></thead>
-            <tbody>
-            {% for v in vitals %}
-            <tr>
-                <td class="nowrap">{{ v.recorded_at|date:"M d, H:i" }}</td>
-                <td>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</td>
-                <td>{{ v.heart_rate|default:"–" }}</td>
-                <td>{{ v.temperature_celsius|default:"–" }}</td>
-                <td>{{ v.oxygen_saturation|default:"–" }}</td>
-                <td>{{ v.weight_kg|default:"–" }}</td>
-                <td>{{ v.monitoring_status|default:"–" }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-        {% else %}<p class="empty">Nothing to show yet.</p>{% endif %}
+    <!-- Doctor's Care Plan & Notes -->
+    {% if doctor_conns %}
+    <div class="dashboard-card care-plan-card">
+        <span class="card-pill-tag">Physician Guidance</span>
+        <h3>Doctor's Recommendations</h3>
+        {% for conn in doctor_conns %}
+        <div class="doctor-plan-item">
+            <div class="doc-header">
+                <strong>{{ conn.doctor.full_name }}</strong>
+                <span class="badge badge-info">{{ conn.doctor.med_specialty|default:"Attending Physician" }}</span>
+            </div>
+            {% if conn.observations %}
+            <p><strong>Clinical Assessment:</strong> {{ conn.observations }}</p>
+            {% endif %}
+            {% if conn.recommendations %}
+            <div class="recom-box">
+                <strong>Action Plan:</strong> {{ conn.recommendations }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
-    {% elif is_doctor %}
+    {% endif %}
+
+    <!-- Historical Telemetry Log Table -->
     <div class="dashboard-card">
-        <span class="card-pill-tag">Doctor · {{ doctor.full_name }}</span>
-        <h3>My Patients ({{ connected_ids|length }})</h3>
-        <form method="get" class="search-row">
-            <input type="text" name="q" placeholder="Search patients by name or username..." value="{{ query }}">
-            <button type="submit" class="btn btn-secondary">Search</button>
-        </form>
-        <form method="post" class="search-row">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_patient">
-            <input type="text" name="username" placeholder="Add patient by username...">
-            <button type="submit" class="btn">Add</button>
-        </form>
-        {% if patients %}
-        <div class="table-wrap"><table class="vitals-table">
-            <thead><tr><th>Patient</th><th>Latest BP</th><th>HR</th><th>SpO₂</th><th>Recorded</th><th></th></tr></thead>
-            <tbody>
-            {% for p in patients %}
-            <tr>
-                <td><strong>{{ p.full_name }}</strong><br><small>@{{ p.user.username }}</small>{% if p.is_connected %} <span class="badge">My patient</span>{% endif %}</td>
-                <td>{% if p.latest_vital and p.latest_vital.systolic %}{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic|default:"–" }}{% else %}–{% endif %}</td>
-                <td>{{ p.latest_vital.heart_rate|default:"–" }}</td>
-                <td>{{ p.latest_vital.oxygen_saturation|default:"–" }}</td>
-                <td class="nowrap">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
-                <td><a href="?patient_id={{ p.id }}{% if query %}&q={{ query }}{% endif %}">View</a></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-        {% else %}<p class="empty">No patients found.</p>{% endif %}
+        <span class="card-pill-tag">Historical Trend</span>
+        <h3>Vitals History Log ({{ vitals|length }})</h3>
+        {% if vitals %}
+        <div class="table-wrap">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>BP (mmHg)</th>
+                        <th>Heart Rate</th>
+                        <th>Oxygen</th>
+                        <th>Temp</th>
+                        <th>Weight</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vitals %}
+                    <tr>
+                        <td class="nowrap font-medium">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
+                        <td><strong>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</strong></td>
+                        <td>{{ v.heart_rate|default:"–" }} bpm</td>
+                        <td>{{ v.oxygen_saturation|default:"–" }}%</td>
+                        <td>{{ v.temperature_celsius|default:"–" }}°C</td>
+                        <td>{{ v.weight_kg|default:"–" }} kg</td>
+                        <td><span class="badge {% if 'Stage' in v.monitoring_status or 'Low' in v.monitoring_status %}badge-danger{% elif 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
+                        <td class="table-notes">{{ v.patient_notes|default:"–"|truncatechars:35 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty">No historical records available.</p>
+        {% endif %}
     </div>
 
-    {% if selected_patient %}
+    <!-- =========================================================
+         DOCTOR DASHBOARD VIEW
+         ========================================================= -->
+    {% elif is_doctor %}
+    <div class="welcome-hero">
+        <div class="hero-top-row">
+            <div class="welcome-badge">Clinical Physician Portal</div>
+            <span class="badge badge-info">{{ doctor.med_specialty|default:"General Practice" }}</span>
+        </div>
+        <h1>Welcome, <span>{{ doctor.full_name }}</span></h1>
+        <p class="subtitle">Monitor connected patients, record diagnostic vitals, and issue clinical prescriptions.</p>
+    </div>
+
+    <!-- Patient Management Bar -->
     <div class="dashboard-card">
-        <span class="card-pill-tag">Patient Detail</span>
-        <h3>{{ selected_patient.full_name }} — Vitals ({{ selected_vitals|length }})</h3>
+        <span class="card-pill-tag">Patient Directory</span>
+        <h3>Active Patient Roster ({{ my_patients|length }} Connected)</h3>
+        
+        <div class="search-actions-grid">
+            <form method="get" class="search-box">
+                <input type="text" name="q" placeholder="Search patients by name or @username..." value="{{ query }}">
+                <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+            </form>
+            <form method="post" class="add-patient-box">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_patient">
+                <input type="text" name="username" placeholder="Connect patient by @username..." required>
+                <button type="submit" class="btn btn-sm">+ Connect</button>
+            </form>
+        </div>
+
+        {% if patients %}
+        <div class="table-wrap" style="margin-top: 14px;">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Latest BP</th>
+                        <th>Heart Rate</th>
+                        <th>Oxygen</th>
+                        <th>Status</th>
+                        <th>Last Reading</th>
+                        <th>Chart</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr class="{% if selected_patient and selected_patient.id == p.id %}selected-row{% endif %}">
+                        <td>
+                            <strong>{{ p.full_name }}</strong>
+                            <span class="pat-user">@{{ p.user.username }}</span>
+                            {% if p.is_connected %}<span class="badge badge-info" style="font-size:0.65rem;">My Patient</span>{% endif %}
+                        </td>
+                        <td>{% if p.latest_vital and p.latest_vital.systolic %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic|default:"–" }}</strong>{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td><span class="badge {{ p.eval_badge }}">{{ p.eval_status }}</span></td>
+                        <td class="nowrap">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
+                        <td>
+                            <a href="?patient_id={{ p.id }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm btn-secondary">Open Chart</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty">No matching patients found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Selected Patient Clinical Inspector -->
+    {% if selected_patient %}
+    <div class="dashboard-card patient-chart-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Clinical Chart</span>
+                <h3>{{ selected_patient.full_name }} (@{{ selected_patient.user.username }})</h3>
+            </div>
+            <a href="{% url 'messages:messages' %}?with={{ selected_patient.user.username }}" class="btn btn-sm btn-secondary">💬 Send Direct Message</a>
+        </div>
+
+        <!-- Action Forms Grid -->
+        <div class="doctor-action-grid">
+            <!-- Record Vitals Form -->
+            <div class="doc-subcard">
+                <h4>➕ Record Diagnostic Vitals</h4>
+                <form method="post" class="doc-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="record_patient_vitals">
+                    <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Systolic (mmHg)</label>
+                            <input type="number" name="systolic" placeholder="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Diastolic (mmHg)</label>
+                            <input type="number" name="diastolic" placeholder="80" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Heart Rate (bpm)</label>
+                            <input type="number" name="heart_rate" placeholder="72">
+                        </div>
+                        <div class="form-group">
+                            <label>Oxygen SpO₂ (%)</label>
+                            <input type="number" step="0.1" name="oxygen_saturation" placeholder="98">
+                        </div>
+                        <div class="form-group">
+                            <label>Temp (°C)</label>
+                            <input type="number" step="0.1" name="temperature_celsius" placeholder="36.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Weight (kg)</label>
+                            <input type="number" step="0.1" name="weight_kg" placeholder="65.0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 8px;">
+                        <label>Clinical Notes</label>
+                        <input type="text" name="patient_notes" placeholder="e.g. In-clinic routine assessment">
+                    </div>
+                    <button type="submit" class="btn btn-sm" style="margin-top: 10px;">Record Vitals</button>
+                </form>
+            </div>
+
+            <!-- Prescribe Medication Form -->
+            <div class="doc-subcard">
+                <h4>💊 Prescribe Medication</h4>
+                <form method="post" class="doc-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="prescribe_medication">
+                    <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                    <div class="form-group">
+                        <label>Medication Name</label>
+                        <input type="text" name="medication" placeholder="e.g. Amlodipine 5mg" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Dosage</label>
+                        <input type="text" name="dosage" placeholder="e.g. 1 Tablet">
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency &amp; Instructions</label>
+                        <input type="text" name="frequency" placeholder="e.g. Once daily at night">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-success" style="margin-top: 10px;">Issue Prescription</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Clinical Notes & Recommendations -->
+        <div class="doc-subcard" style="margin-top: 18px;">
+            <h4>📋 Physician Care Plan &amp; Recommendations</h4>
+            <form method="post" class="doc-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_clinical_note">
+                <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                <div class="form-group">
+                    <label>Clinical Assessment / Observations</label>
+                    <textarea name="observations" rows="2" placeholder="Record diagnostic observations...">{{ selected_connection.observations|default:'' }}</textarea>
+                </div>
+                <div class="form-group" style="margin-top: 8px;">
+                    <label>Care Plan &amp; Patient Recommendations</label>
+                    <textarea name="recommendations" rows="2" placeholder="Guidance for the patient to follow...">{{ selected_connection.recommendations|default:'' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-sm" style="margin-top: 10px;">Save Care Plan</button>
+            </form>
+        </div>
+
+        <!-- Selected Patient Vitals Log -->
+        <h4 style="margin-top: 24px; margin-bottom: 10px;">Telemetry History ({{ selected_vitals|length }})</h4>
         {% if selected_vitals %}
-        <div class="table-wrap"><table class="vitals-table">
-            <thead><tr><th>Date</th><th>BP</th><th>HR</th><th>Temp</th><th>SpO₂</th><th>Weight</th><th>Status</th><th>Notes</th></tr></thead>
-            <tbody>
-            {% for v in selected_vitals %}
-            <tr>
-                <td class="nowrap">{{ v.recorded_at|date:"M d, H:i" }}</td>
-                <td>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</td>
-                <td>{{ v.heart_rate|default:"–" }}</td>
-                <td>{{ v.temperature_celsius|default:"–" }}</td>
-                <td>{{ v.oxygen_saturation|default:"–" }}</td>
-                <td>{{ v.weight_kg|default:"–" }}</td>
-                <td>{{ v.monitoring_status|default:"–" }}</td>
-                <td>{{ v.patient_notes|default:"–"|truncatechars:40 }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
-        {% else %}<p class="empty">No vitals for this patient yet.</p>{% endif %}
+        <div class="table-wrap">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>BP</th>
+                        <th>HR</th>
+                        <th>SpO₂</th>
+                        <th>Temp</th>
+                        <th>Weight</th>
+                        <th>Status</th>
+                        <th>Clinical Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in selected_vitals %}
+                    <tr>
+                        <td class="nowrap">{{ v.recorded_at|date:"M d, H:i" }}</td>
+                        <td><strong>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }}{% else %}–{% endif %}</strong></td>
+                        <td>{{ v.heart_rate|default:"–" }} bpm</td>
+                        <td>{{ v.oxygen_saturation|default:"–" }}%</td>
+                        <td>{{ v.temperature_celsius|default:"–" }}°C</td>
+                        <td>{{ v.weight_kg|default:"–" }} kg</td>
+                        <td><span class="badge {% if 'Stage' in v.monitoring_status or 'Low' in v.monitoring_status %}badge-danger{% elif 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
+                        <td>{{ v.patient_notes|default:"–" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty">No vital records logged for this patient yet.</p>
+        {% endif %}
     </div>
     {% endif %}
+
     {% endif %}
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/home/home.js' %}"></script>
 <script>
 document.querySelectorAll('input[name="role"]').forEach((el) => {
     el.addEventListener("change", () => {

@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 {% load static %}
 
-{% block title %}User Profile - DocTient{% endblock %}
+{% block title %}Medical Profile - DocTient{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile/profile.css' %}">
@@ -11,8 +11,15 @@
 <div class="profile-container">
     <div class="profile-card">
         <div class="profile-header">
-            <h2>User Profile</h2>
-            <p>Update your personal information and biography.</p>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Medical Profile &amp; Demographics</h2>
+                {% if doctor %}
+                <span class="badge badge-info">Doctor Credentials</span>
+                {% elif patient %}
+                <span class="badge badge-success">Patient Chart</span>
+                {% endif %}
+            </div>
+            <p>Maintain your clinical contact details, legal information, and physician credentials.</p>
         </div>
 
         <form method="post" enctype="multipart/form-data" class="profile-form">
@@ -23,31 +30,88 @@
                     {% if profile.profile_image %}
                         <img src="{{ profile.profile_image.url }}" alt="Profile Photo" id="avatarImg">
                     {% else %}
-                        <div class="avatar-placeholder" id="avatarImg">No Image</div>
+                        <div class="avatar-placeholder" id="avatarImg">
+                            {% if doctor %}🩺{% else %}👤{% endif %}
+                        </div>
                     {% endif %}
                 </div>
                 <div class="avatar-upload">
-                    <label for="profile_image" class="file-label">Upload Profile Picture</label>
+                    <label for="profile_image" class="file-label">Profile Avatar / Badge</label>
                     <input type="file" id="profile_image" name="profile_image" accept="image/*">
+                    <small style="color:var(--text-soft); font-size:0.75rem; display:block; margin-top:4px;">JPG, PNG or GIF up to 5MB</small>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" value="{{ request.user.username }}" disabled>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="username">System Handle</label>
+                    <input type="text" id="username" value="@{{ request.user.username }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">Legal Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ profile.full_name|default:request.user.username }}" placeholder="e.g. Juan Dela Cruz" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="full_name">Full Name</label>
-                <input type="text" id="full_name" name="full_name" value="{{ profile.full_name|default:'' }}" placeholder="e.g. Juan Dela Cruz">
+            <!-- Role-Specific Medical Fields -->
+            {% if patient %}
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="contact_no">Primary Mobile Contact</label>
+                    <input type="tel" id="contact_no" name="contact_no" value="{{ patient.contact_no|default:'' }}" placeholder="+63 917 000 0000">
+                </div>
+                <div class="form-group">
+                    <label for="emergency_contact_no">Emergency Contact Phone</label>
+                    <input type="tel" id="emergency_contact_no" name="emergency_contact_no" value="{{ patient.emergency_contact_no|default:'' }}" placeholder="+63 918 000 0000">
+                </div>
             </div>
 
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
+                        <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
+                        <option value="Non-Binary" {% if patient.gender == "Non-Binary" %}selected{% endif %}>Non-Binary</option>
+                        <option value="Prefer not to say" {% if patient.gender == "Prefer not to say" %}selected{% endif %}>Prefer not to say</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="address">Residential Address</label>
+                    <input type="text" id="address" name="address" value="{{ patient.address|default:'' }}" placeholder="City, Province / Region">
+                </div>
+            </div>
+            {% endif %}
+
+            {% if doctor %}
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="med_specialty">Medical Specialty</label>
+                    <input type="text" id="med_specialty" name="med_specialty" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology, Internal Medicine">
+                </div>
+                <div class="form-group">
+                    <label for="contact_no">Clinic Phone / Hotline</label>
+                    <input type="tel" id="contact_no" name="contact_no" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
+                </div>
+            </div>
             <div class="form-group">
-                <label for="bio">Biography</label>
-                <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself...">{{ profile.bio|default:'' }}</textarea>
+                <label for="availability_status">Practice Status</label>
+                <select id="availability_status" name="availability_status" class="form-select">
+                    <option value="available" {% if doctor.availability_status == "available" %}selected{% endif %}>Available for Telehealth &amp; Consultations</option>
+                    <option value="in_clinic" {% if doctor.availability_status == "in_clinic" %}selected{% endif %}>In Clinic (In-person appointments only)</option>
+                    <option value="off_duty" {% if doctor.availability_status == "off_duty" %}selected{% endif %}>Off Duty / On Leave</option>
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="bio">Biography / Medical Background</label>
+                <textarea id="bio" name="bio" rows="3" placeholder="Provide background information, medical history notes, or clinical qualifications...">{{ profile.bio|default:'' }}</textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary">Save Profile</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save Profile Details</button>
         </form>
     </div>
 </div>
