@@ -101,6 +101,7 @@ def reports_view(request):
         adherence_rate = (
             round((taken_med_logs / total_med_logs) * 100) if total_med_logs > 0 else 100
         )
+        adherence_style = f"width: {adherence_rate}%;"
 
         # Chronological readings for trend chart (oldest to newest, max 10)
         trend_readings = list(reversed(vitals[:10]))
@@ -161,6 +162,7 @@ def reports_view(request):
             "bmi_category": bmi_category,
             "medications": medications,
             "adherence_rate": adherence_rate,
+            "adherence_style": adherence_style,
             "trend_readings": trend_readings,
             "chart_points": chart_points,
             "trend_polyline_points": trend_polyline_points,

@@ -15,7 +15,9 @@
                 <span class="medix-badge-light">Biometric Analytics &amp; Reports</span>
                 <h1 class="hero-title">Longitudinal Telemetry &amp; Clinical Audit</h1>
                 <p class="hero-desc">
-                    {% if patient %}<strong>{{ patient.full_name }}</strong> · {% endif %}Comprehensive biometric audit across diagnostic sessions. Real-time cardiovascular risk stratification and treatment adherence telemetry.
+                    {% if patient %}<strong>{{ patient.full_name }}</strong> · {% endif %}Comprehensive biometric audit
+                    across diagnostic sessions. Real-time cardiovascular risk stratification and treatment adherence
+                    telemetry.
                 </p>
                 <button onclick="window.print()" class="btn-pill-action no-print">
                     Print / Export Clinical Report
@@ -27,7 +29,8 @@
                     <span class="float-label">Mean Cardiovascular Index</span>
                     <div class="float-metric-num">{% if avg_sys %}{{ avg_sys }}<span style="font-size: 1.8rem; font-weight: 500;">/</span>{{ avg_dia }}{% else %}118/78{% endif %}</div>
                     <p class="float-desc">
-                        Status: <strong>{{ bp_classification|default:"Optimal Parameters" }}</strong>. Telemetry confirms controlled systemic hemodynamics.
+                        Status: <strong>{{ bp_classification|default:"Optimal Parameters" }}</strong>. Telemetry
+                        confirms controlled systemic hemodynamics.
                     </p>
                 </div>
             </div>
@@ -56,7 +59,8 @@
 
         <div class="rep-card">
             <span class="rep-label">Mean Oxygen Saturation</span>
-            <div class="rep-val">{% if avg_spo2 %}{{ avg_spo2 }}<span class="rep-slash">%</span>{% else %}–{% endif %}</div>
+            <div class="rep-val">{% if avg_spo2 %}{{ avg_spo2 }}<span class="rep-slash">%</span>{% else %}–{% endif %}
+            </div>
             <span class="badge badge-success" style="margin-top: 8px;">Adequate Perfusion</span>
             <small class="rep-sub">Continuous Pulse Oximetry</small>
         </div>
@@ -84,22 +88,23 @@
             <svg class="medix-trend-svg" viewBox="0 0 600 130" preserveAspectRatio="none">
                 <!-- Soft Under-Curve Area Tint -->
                 {% if trend_area_path %}
-                <path d="{{ trend_area_path }}" fill="rgba(2, 132, 199, 0.08)"/>
+                <path d="{{ trend_area_path }}" fill="rgba(2, 132, 199, 0.08)" />
                 {% endif %}
 
                 <!-- Systolic Trend Polyline -->
                 {% if trend_polyline_points %}
                 <polyline fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                    points="{{ trend_polyline_points }}"/>
+                    points="{{ trend_polyline_points }}" />
                 {% endif %}
 
                 <!-- Data Point Dots & Value Labels -->
                 {% for pt in chart_points %}
-                <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="4.5" fill="#0284c7" stroke="#ffffff" stroke-width="2"/>
-                <text x="{{ pt.x }}" y="{{ pt.y_label }}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0284c7">{{ pt.systolic }}</text>
+                <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="4.5" fill="#0284c7" stroke="#ffffff" stroke-width="2" />
+                <text x="{{ pt.x }}" y="{{ pt.y_label }}" text-anchor="middle" font-size="10.5" font-weight="700"
+                    fill="#0284c7">{{ pt.systolic }}</text>
                 {% endfor %}
             </svg>
-            
+
             <div class="trend-date-axis">
                 {% for pt in chart_points %}
                 <div class="axis-point">
@@ -120,9 +125,16 @@
             <span class="card-pill-tag">Compliance Analysis</span>
             <h3 style="font-size: 1.2rem; margin-bottom: 12px;">Medication Adherence Progress</h3>
             <div class="progress-bar-wrap">
-                <div class="progress-bar-fill" style="width: {{ adherence_rate }}%;"></div>
+                <div class="progress-bar-fill" id="adherenceBar" style="width: 100%;"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">
+            <script>
+                (function() {
+                    var el = document.getElementById('adherenceBar');
+                    if (el) el.style.width = '{{ adherence_rate|default:100 }}%';
+                })();
+            </script>
+            <div
+                style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">
                 <span>Compliance Level</span>
                 <strong>{{ adherence_rate }}% Logged</strong>
             </div>
@@ -152,8 +164,10 @@
                     </p>
                 </div>
             </div>
-            <div style="margin-top: 16px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; background: #f8fafc; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--surface-border);">
-                <strong>Clinical Note:</strong> Regular daily monitoring supports early detection of hypertensive variation. Maintain balanced low-sodium nutrition.
+            <div
+                style="margin-top: 16px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; background: #f8fafc; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--surface-border);">
+                <strong>Clinical Note:</strong> Regular daily monitoring supports early detection of hypertensive
+                variation. Maintain balanced low-sodium nutrition.
             </div>
         </div>
     </div>
@@ -254,7 +268,8 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'home:home' %}?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">Open Chart</a>
+                            <a href="{% url 'home:home' %}?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">Open
+                                Chart</a>
                         </td>
                     </tr>
                     {% endfor %}
