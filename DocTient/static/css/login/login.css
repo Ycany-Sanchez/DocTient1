@@ -1,23 +1,21 @@
-﻿.auth-page {
+/* DocTient — MedixWeb Auth Styling */
+
+.auth-page {
     min-height: 85vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
-    position: relative;
 }
 
 .auth-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid var(--glass-border);
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
     border-radius: var(--radius-lg);
-    padding: 42px 36px;
+    padding: 44px 38px;
     width: 100%;
-    max-width: 420px;
-    box-shadow: var(--glass-shadow-lift);
-    animation: scaleIn 0.45s var(--ease-smooth) both;
+    max-width: 440px;
+    box-shadow: 0 15px 35px -5px rgba(2, 132, 199, 0.08);
     position: relative;
     overflow: hidden;
 }
@@ -27,7 +25,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #06b6d4, #0284c7, #8b5cf6);
+    background: var(--brand-primary);
 }
 
 .auth-header {
@@ -36,19 +34,18 @@
 }
 
 .auth-brand-logo {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #0284c7, #0d9488);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--brand-primary);
     margin-bottom: 6px;
     display: inline-block;
+    letter-spacing: -0.02em;
 }
 
 .auth-header h2 {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--text-main);
+    color: var(--text-primary);
     letter-spacing: -0.02em;
     margin-bottom: 6px;
 }
@@ -58,55 +55,41 @@
     font-size: 0.92rem;
 }
 
-.auth-form .form-group {
-    margin-bottom: 20px;
+.form-group {
+    margin-bottom: 18px;
 }
 
-.auth-form label {
+.form-group label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
     margin-bottom: 6px;
 }
 
-.auth-form input {
+.form-group input {
     width: 100%;
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(203, 213, 225, 0.8);
+    padding: 11px 16px;
     border-radius: var(--radius-sm);
-    font-size: 0.95rem;
-    color: var(--text-main);
-    font-family: inherit;
-    transition: all 0.2s var(--ease-smooth);
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02) inset;
-}
-
-.auth-form input:focus {
+    border: 1px solid var(--surface-border);
     background: #ffffff;
-    border-color: var(--primary-teal);
-    outline: none;
-    box-shadow: 0 0 0 4px var(--primary-glow);
-    transform: translateY(-1px);
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
 }
 
-.btn-block {
-    width: 100%;
-    padding: 12px 18px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin-top: 10px;
+.form-group input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
 }
 
 .auth-footer {
-    margin-top: 26px;
+    margin-top: 24px;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.88rem;
     color: var(--text-muted);
-}
-
-.auth-footer a {
-    color: #0284c7;
-    font-weight: 700;
 }

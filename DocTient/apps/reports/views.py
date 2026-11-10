@@ -159,3 +159,4 @@ def reports_view(request):
         "normal_patients": normal_patients,
         "patients": patients,
     })
+

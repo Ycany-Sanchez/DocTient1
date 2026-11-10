@@ -1,76 +1,65 @@
-﻿.settings-container {
-    max-width: 600px;
-    margin: 0 auto;
-    animation: fadeInUp 0.5s var(--ease-smooth) both;
+/* DocTient — MedixWeb Settings Styling */
+
+.settings-container {
+    max-width: 680px;
+    margin: 10px auto 40px auto;
 }
 
 .settings-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid var(--glass-border);
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
     border-radius: var(--radius-lg);
     padding: 36px 40px;
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--shadow-card);
 }
 
 .settings-header {
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    border-bottom: 1px solid var(--surface-border);
     padding-bottom: 18px;
-    margin-bottom: 22px;
-}
-
-.settings-header h2 {
-    font-size: 1.45rem;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.02em;
-}
-
-.settings-header p {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-top: 2px;
+    margin-bottom: 24px;
 }
 
 .setting-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 16px;
+    padding: 18px 20px;
     border-radius: var(--radius-md);
-    background: rgba(248, 250, 252, 0.5);
-    margin-bottom: 12px;
-    border: 1px solid rgba(226, 232, 240, 0.6);
-    transition: all 0.25s ease;
+    background: #f8fafc;
+    margin-bottom: 14px;
+    border: 1px solid var(--surface-border);
+    transition: all 0.2s ease;
 }
 
 .setting-item:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(6, 182, 212, 0.35);
-    box-shadow: 0 6px 18px rgba(6, 182, 212, 0.08);
+    background: #ffffff;
+    border-color: var(--brand-primary);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.06);
 }
 
 .setting-title {
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-primary);
     font-size: 0.95rem;
     display: block;
+    cursor: pointer;
 }
 
 .setting-desc {
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: var(--text-muted);
-    margin-top: 3px;
+    margin-top: 4px;
+    line-height: 1.45;
 }
 
-/* Glassy Toggle Switch */
+/* MedixWeb Clean Toggle Switch */
 .switch {
     position: relative;
     display: inline-block;
     width: 48px;
     height: 28px;
     flex-shrink: 0;
+    margin-left: 20px;
 }
 
 .switch input {
@@ -84,7 +73,7 @@
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: #cbd5e1;
-    transition: all 0.3s var(--ease-smooth);
+    transition: all 0.25s ease;
     border-radius: 28px;
 }
 
@@ -95,20 +84,16 @@
     width: 22px;
     left: 3px;
     bottom: 3px;
-    background-color: white;
-    transition: transform 0.3s var(--ease-spring);
+    background-color: #ffffff;
+    transition: transform 0.25s ease;
     border-radius: 50%;
-    box-shadow: 0 3px 6px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
 }
 
 input:checked + .slider {
-    background: linear-gradient(135deg, #06b6d4, #0284c7);
+    background-color: var(--brand-primary);
 }
 
 input:checked + .slider:before {
     transform: translateX(20px);
-}
-
-.settings-form .btn {
-    margin-top: 24px;
 }

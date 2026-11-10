@@ -1,194 +1,127 @@
-/* DocTient Reports & Telemetry Analytics Styling */
+/* DocTient — MedixWeb Reports & Analytics Styling */
 
 .reports-container {
-    max-width: 1040px;
+    max-width: 1140px;
     margin: 0 auto;
 }
 
 .reports-hero {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
-.patient-demographics-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.patient-demographics-row h2 {
-    margin: 4px 0 2px;
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.02em;
-}
-
-.demo-sub {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    margin: 0;
-}
-
-.overall-status-box {
-    text-align: right;
-}
-
-.status-label {
-    display: block;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: var(--text-soft);
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-}
-
-/* 4-Metric Grid */
-.report-metrics-grid {
+/* 4-Card Highlight Grid */
+.medix-reports-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 24px;
 }
 
-@media (max-width: 860px) {
-    .report-metrics-grid {
+@media (max-width: 900px) {
+    .medix-reports-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 520px) {
-    .report-metrics-grid {
+    .medix-reports-grid {
         grid-template-columns: 1fr;
     }
 }
 
-.rep-metric-card {
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid var(--glass-border);
+.rep-card {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
     border-radius: var(--radius-md);
-    padding: 22px 18px;
+    padding: 24px 20px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s var(--ease-medix);
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 0;
-    transition: all 0.25s var(--ease-smooth);
+    flex-direction: column;
 }
 
-.rep-metric-card:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(14, 165, 233, 0.4);
-    box-shadow: 0 10px 24px -4px rgba(14, 165, 233, 0.12);
-}
-
-.rep-icon {
-    font-size: 1.8rem;
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius-sm);
-    background: rgba(241, 245, 249, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.rep-details {
-    flex: 1;
+.rep-card:hover {
+    border-color: rgba(2, 132, 199, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -2px rgba(2, 132, 199, 0.1);
 }
 
 .rep-label {
-    display: block;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
-.rep-value {
-    display: block;
-    font-size: 1.6rem;
+.rep-val {
+    font-size: 1.85rem;
     font-weight: 800;
-    color: var(--text-main);
+    color: var(--text-primary);
     line-height: 1.1;
     letter-spacing: -0.02em;
 }
 
+.rep-val small {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
 .rep-slash {
-    color: var(--text-soft);
+    color: var(--text-subtle);
     font-weight: 500;
 }
 
-.rep-unit {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin-top: 3px;
+.rep-sub {
+    font-size: 0.74rem;
+    color: var(--text-subtle);
+    margin-top: 6px;
 }
 
-.rep-range {
-    display: block;
-    font-size: 0.72rem;
-    color: var(--text-soft);
-    margin-top: 4px;
-}
-
-/* Trend Chart */
-.trend-chart-box {
-    background: rgba(248, 250, 252, 0.85);
-    border: 1px solid rgba(226, 232, 240, 0.9);
+/* Trend Graph */
+.medix-trend-container {
+    background: #f8fafc;
+    border: 1px solid var(--surface-border);
     border-radius: var(--radius-md);
     padding: 20px;
     margin-top: 14px;
 }
 
-.trend-svg {
+.medix-trend-svg {
     width: 100%;
     height: 120px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
-.trend-points-list {
+.trend-date-axis {
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    overflow-x: auto;
     padding-top: 10px;
-    border-top: 1px solid rgba(226, 232, 240, 0.85);
+    border-top: 1px solid var(--surface-border);
+    overflow-x: auto;
 }
 
-.trend-point-col {
+.axis-point {
     text-align: center;
-    min-width: 65px;
+    font-size: 0.8rem;
+    min-width: 60px;
 }
 
-.tp-bp {
+.axis-point strong {
     display: block;
-    font-size: 0.85rem;
-    color: var(--text-main);
+    color: var(--text-primary);
 }
 
-.tp-hr {
-    display: block;
-    font-size: 0.75rem;
-    color: #0284c7;
-    font-weight: 600;
-}
-
-.tp-date {
-    display: block;
+.axis-point small {
+    color: var(--text-muted);
     font-size: 0.7rem;
-    color: var(--text-soft);
-    margin-top: 2px;
 }
 
-/* Split Grid */
-.report-split-grid {
+/* Reports Split Row */
+.reports-split-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
@@ -196,75 +129,61 @@
 }
 
 @media (max-width: 768px) {
-    .report-split-grid {
+    .reports-split-row {
         grid-template-columns: 1fr;
     }
 }
 
-/* Adherence Meter */
-.adherence-meter-container {
-    margin: 16px 0;
-}
-
-.adherence-bar-bg {
+.progress-bar-wrap {
     width: 100%;
-    height: 14px;
-    background: rgba(226, 232, 240, 0.9);
+    height: 12px;
+    background: #e2e8f0;
     border-radius: var(--radius-full);
     overflow: hidden;
+    margin-top: 8px;
 }
 
-.adherence-bar-fill {
+.progress-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
     border-radius: var(--radius-full);
-    transition: width 0.5s ease;
+    transition: width 0.4s ease;
 }
 
-.adherence-label-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    margin-top: 6px;
-}
-
-.rep-med-list {
-    list-style: none;
+.regimen-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.rep-med-list li {
+.regimen-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: #f8fafc;
+    border: 1px solid var(--surface-border);
     border-radius: var(--radius-sm);
-    font-size: 0.88rem;
 }
 
-/* BMI Meter */
-.bmi-summary-box {
+.bmi-medix-box {
     display: flex;
     align-items: center;
     gap: 18px;
-    padding: 18px;
-    background: rgba(240, 253, 250, 0.7);
-    border: 1px solid rgba(204, 251, 241, 0.9);
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
     border-radius: var(--radius-md);
+    padding: 18px;
 }
 
-.bmi-num {
-    font-size: 2.2rem;
+.bmi-large {
+    font-size: 2.4rem;
     font-weight: 800;
-    color: #0f766e;
+    color: var(--brand-dark);
     line-height: 1;
 }
 
-/* =========================================================
-   PRINT STYLESHEET (Clean Clinical PDF Export)
-   ========================================================= */
+/* Print Rules */
 @media print {
     .no-print, .site-header, .site-footer {
         display: none !important;
@@ -272,18 +191,21 @@
 
     body {
         background: #ffffff !important;
+    }
+
+    .medix-hero-banner {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+        box-shadow: none !important;
+    }
+
+    .hero-title, .hero-desc {
         color: #000000 !important;
     }
 
-    .dashboard-card {
+    .dashboard-card, .rep-card {
         box-shadow: none !important;
         border: 1px solid #cccccc !important;
-        background: #ffffff !important;
-        page-break-inside: avoid;
-    }
-
-    .reports-hero {
-        border-bottom: 2px solid #000000;
-        padding-bottom: 10px;
     }
 }

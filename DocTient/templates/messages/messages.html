@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Clinical Messages - DocTient{% endblock %}
+{% block title %}Consultation Messages - DocTient{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/messages/messages.css' %}">
@@ -9,58 +9,71 @@
 
 {% block content %}
 <div class="msg-container">
-    <div class="welcome-hero msg-hero">
-        <div class="hero-top-row">
-            <div class="welcome-badge">Clinical Telehealth Messaging</div>
-            {% if total_unread %}
-            <span class="badge badge-danger">{{ total_unread }} Unread</span>
-            {% else %}
-            <span class="badge badge-success">Inbox Up to Date</span>
-            {% endif %}
+    <div class="medix-hero-banner msg-hero">
+        <div class="hero-split">
+            <div class="hero-left">
+                <span class="medix-badge-light">Secure Telehealth Channel</span>
+                <h1 class="hero-title">Consultation Messages</h1>
+                <p class="hero-desc">
+                    Encrypted direct clinical communication between attending physicians and connected patients.
+                </p>
+            </div>
+            <div class="hero-right">
+                <div class="frosted-float-card">
+                    <span class="float-label">Inbox Status</span>
+                    <div class="float-metric-num">{% if total_unread %}{{ total_unread }}{% else %}0{% endif %}</div>
+                    <p class="float-desc">{% if total_unread %}Unread patient/physician messages pending response.{% else %}All clinical conversation threads are up to date.{% endif %}</p>
+                </div>
+            </div>
         </div>
-        <h1>Consultation <span>Messages</span></h1>
-        <p class="subtitle">Secure direct communication between licensed doctors and connected patients.</p>
     </div>
 
-    <div class="msg-grid">
+    <div class="medix-msg-grid">
         <!-- Sidebar: Conversation List -->
-        <div class="dashboard-card msg-list-card">
+        <div class="dashboard-card msg-sidebar-card">
             <div class="conv-header-row">
                 <div>
                     <span class="card-pill-tag">Directory</span>
-                    <h3>Inbox ({{ conversations|length }})</h3>
+                    <h3 style="font-size: 1.15rem; margin: 0;">Inbox ({{ conversations|length }})</h3>
                 </div>
                 <button type="button" id="toggleNewMsgBtn" class="btn btn-sm btn-secondary">+ New Chat</button>
             </div>
 
-            <!-- New Message Compose Box (collapsible) -->
+            <!-- New Message Accordion -->
             <div id="newMsgBox" class="new-msg-accordion" style="display: none;">
-                <form method="post" class="new-msg-form">
+                <form method="post">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="recipient">Select {% if role == "patient" %}Physician{% else %}Patient{% endif %}</label>
-                        <select id="recipient" name="recipient" class="form-select" required>
+                        <label class="medix-label">Select {% if role == "patient" %}Physician{% else %}Patient{% endif %}</label>
+                        <select id="recipient" name="recipient" class="medix-input" required>
                             <option value="">-- Choose recipient --</option>
                             {% for u in recipients %}
-                            <option value="{{ u.username }}">{{ u.username }} {% if u.doctor_profile %}({{ u.doctor_profile.full_name }} - {{ u.doctor_profile.med_specialty }}){% elif u.patient_profile %}({{ u.patient_profile.full_name }}){% endif %}</option>
+                            <option value="{{ u.username }}">{{ u.username }} {% if u.doctor_profile %}({{ u.doctor_profile.full_name }}){% elif u.patient_profile %}({{ u.patient_profile.full_name }}){% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group" style="margin-top: 8px;">
-                        <label for="content">Initial Message</label>
-                        <textarea id="content" name="content" rows="2" placeholder="Write consultation inquiry..." required></textarea>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label class="medix-label">Message</label>
+                        <textarea id="content" name="content" class="medix-input" rows="2" placeholder="Write consultation inquiry..." required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-sm" style="margin-top: 8px; width: 100%;">Start Conversation</button>
+                    <button type="submit" class="btn-pill-action" style="margin-top: 12px; width: 100%; justify-content: center;">
+                        Start Conversation
+                        <span class="btn-arrow-disc">➔</span>
+                    </button>
                 </form>
             </div>
 
             {% if conversations %}
             <ul class="conv-list">
                 {% for c in conversations %}
-                <li class="{% if active_user and c.user.id == active_user.id %}active{% endif %}">
+                <li class="{% if active_user and c.user.id == active_user.id %}active-conv{% endif %}">
                     <a href="?with={{ c.user.username }}" class="conv-link">
                         <div class="conv-avatar">
-                            {% if c.user.doctor_profile %}🩺{% else %}👤{% endif %}
+                            {% if c.user.doctor_profile %}
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.4A3 3 0 1 0 9 6.6V17a5 5 0 0 0 10 0v-2.5"/><circle cx="19" cy="12" r="2.5"/><path d="M7 6.6V17a2.5 2.5 0 0 1-5 0V6.6"/></svg>
+                            {% else %}
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {% endif %}
                         </div>
                         <div class="conv-body">
                             <div class="conv-top">
@@ -78,10 +91,7 @@
                 {% endfor %}
             </ul>
             {% else %}
-            <div class="empty-state-box">
-                <p>No active message threads.</p>
-                <small class="empty-sub">Click "+ New Chat" above to consult with a provider.</small>
-            </div>
+            <p style="color: var(--text-muted); font-size: 0.88rem; padding: 20px 0;">No active message threads. Click "+ New Chat" above.</p>
             {% endif %}
         </div>
 
@@ -89,22 +99,19 @@
         <div class="dashboard-card msg-thread-card">
             {% if active_user %}
             <div class="chat-header">
-                <div class="chat-user-info">
-                    <div class="chat-avatar">
-                        {% if active_profile and active_user.doctor_profile %}🩺{% else %}👤{% endif %}
-                    </div>
-                    <div>
-                        <h3>{{ active_profile.full_name|default:active_user.username }}</h3>
-                        <small class="chat-sub">
-                            {% if active_user.doctor_profile %}
-                            {{ active_user.doctor_profile.med_specialty|default:"Physician" }} · Direct Consultation
-                            {% else %}
-                            Patient Profile · @{{ active_user.username }}
-                            {% endif %}
-                        </small>
-                    </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; margin: 0; color: var(--text-primary);">
+                        {{ active_profile.full_name|default:active_user.username }}
+                    </h3>
+                    <small style="color: var(--text-muted);">
+                        {% if active_user.doctor_profile %}
+                        {{ active_user.doctor_profile.med_specialty|default:"Attending Physician" }} · Direct Telehealth Line
+                        {% else %}
+                        Patient Profile · @{{ active_user.username }}
+                        {% endif %}
+                    </small>
                 </div>
-                <span class="badge badge-success">Active Session</span>
+                <span class="badge badge-success">Encrypted Session</span>
             </div>
 
             <div class="thread" id="chatThread">
@@ -121,9 +128,8 @@
                     </div>
                 </div>
                 {% empty %}
-                <div class="empty-state-box" style="margin: auto;">
-                    <p>No previous messages in this conversation.</p>
-                    <small>Write your message below to begin consultation.</small>
+                <div style="text-align: center; color: var(--text-muted); margin: auto;">
+                    <p>No previous messages in this thread.</p>
                 </div>
                 {% endfor %}
             </div>
@@ -131,14 +137,16 @@
             <form method="post" class="send-row">
                 {% csrf_token %}
                 <input type="hidden" name="recipient" value="{{ active_user.username }}">
-                <input type="text" name="content" placeholder="Type clinical message or consultation inquiry..." maxlength="2000" autocomplete="off" required autofocus>
-                <button type="submit" class="btn">Send ➔</button>
+                <input type="text" name="content" class="medix-input" placeholder="Type consultation message..." maxlength="2000" autocomplete="off" required autofocus>
+                <button type="submit" class="btn-pill-action" style="padding: 6px 8px 6px 18px; font-size: 0.85rem; flex-shrink: 0;">
+                    Send
+                    <span class="btn-arrow-disc" style="width: 26px; height: 26px; font-size: 0.72rem;">➔</span>
+                </button>
             </form>
             {% else %}
-            <div class="empty-thread-placeholder">
-                <div class="empty-icon">💬</div>
-                <h3>Select a Conversation</h3>
-                <p>Choose an ongoing dialogue from the directory on the left, or initiate a new consultation.</p>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; padding: 40px;">
+                <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 6px;">Select a Conversation</h3>
+                <p style="font-size: 0.9rem;">Choose a contact from the directory on the left to review telemetry and consult.</p>
             </div>
             {% endif %}
         </div>
@@ -155,8 +163,6 @@ if (toggleBtn && newMsgBox) {
         newMsgBox.style.display = newMsgBox.style.display === "none" ? "block" : "none";
     });
 }
-
-// Auto scroll chat to bottom
 const chatThread = document.getElementById("chatThread");
 if (chatThread) {
     chatThread.scrollTop = chatThread.scrollHeight;

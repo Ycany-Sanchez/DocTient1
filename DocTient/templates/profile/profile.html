@@ -9,17 +9,17 @@
 
 {% block content %}
 <div class="profile-container">
-    <div class="profile-card">
+    <div class="dashboard-card profile-card">
         <div class="profile-header">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Medical Profile &amp; Demographics</h2>
+                <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Medical Profile &amp; Demographics</h2>
                 {% if doctor %}
-                <span class="badge badge-info">Doctor Credentials</span>
+                <span class="badge badge-info">Attending Physician</span>
                 {% elif patient %}
                 <span class="badge badge-success">Patient Chart</span>
                 {% endif %}
             </div>
-            <p>Maintain your clinical contact details, legal information, and physician credentials.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Maintain your clinical records, emergency contacts, and telehealth credentials.</p>
         </div>
 
         <form method="post" enctype="multipart/form-data" class="profile-form">
@@ -28,95 +28,82 @@
             <div class="avatar-section">
                 <div class="avatar-preview">
                     {% if profile.profile_image %}
-                        <img src="{{ profile.profile_image.url }}" alt="Profile Photo" id="avatarImg">
+                        <img src="{{ profile.profile_image.url }}" alt="Profile Photo">
                     {% else %}
-                        <div class="avatar-placeholder" id="avatarImg">
-                            {% if doctor %}🩺{% else %}👤{% endif %}
-                        </div>
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" color="var(--brand-primary)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     {% endif %}
                 </div>
                 <div class="avatar-upload">
-                    <label for="profile_image" class="file-label">Profile Avatar / Badge</label>
-                    <input type="file" id="profile_image" name="profile_image" accept="image/*">
-                    <small style="color:var(--text-soft); font-size:0.75rem; display:block; margin-top:4px;">JPG, PNG or GIF up to 5MB</small>
+                    <label class="medix-label">Profile Avatar</label>
+                    <input type="file" id="profile_image" name="profile_image" accept="image/*" style="font-size: 0.85rem; color: var(--text-muted);">
+                    <small style="color: var(--text-subtle); display: block; margin-top: 4px;">JPG, PNG up to 5MB</small>
                 </div>
             </div>
 
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label for="username">System Handle</label>
-                    <input type="text" id="username" value="@{{ request.user.username }}" disabled>
+                    <label class="medix-label">System Handle</label>
+                    <input type="text" class="medix-input" value="@{{ request.user.username }}" disabled style="background: #f1f5f9; cursor: not-allowed;">
                 </div>
 
                 <div class="form-group">
-                    <label for="full_name">Legal Full Name</label>
-                    <input type="text" id="full_name" name="full_name" value="{{ profile.full_name|default:request.user.username }}" placeholder="e.g. Juan Dela Cruz" required>
+                    <label class="medix-label">Legal Full Name</label>
+                    <input type="text" name="full_name" class="medix-input" value="{{ profile.full_name|default:request.user.username }}" placeholder="e.g. Juan Dela Cruz" required>
                 </div>
             </div>
 
-            <!-- Role-Specific Medical Fields -->
             {% if patient %}
-            <div class="form-grid-2">
+            <div class="form-grid-2" style="margin-top: 14px;">
                 <div class="form-group">
-                    <label for="contact_no">Primary Mobile Contact</label>
-                    <input type="tel" id="contact_no" name="contact_no" value="{{ patient.contact_no|default:'' }}" placeholder="+63 917 000 0000">
+                    <label class="medix-label">Primary Mobile Contact</label>
+                    <input type="tel" name="contact_no" class="medix-input" value="{{ patient.contact_no|default:'' }}" placeholder="+63 917 000 0000">
                 </div>
                 <div class="form-group">
-                    <label for="emergency_contact_no">Emergency Contact Phone</label>
-                    <input type="tel" id="emergency_contact_no" name="emergency_contact_no" value="{{ patient.emergency_contact_no|default:'' }}" placeholder="+63 918 000 0000">
+                    <label class="medix-label">Emergency Contact Phone</label>
+                    <input type="tel" name="emergency_contact_no" class="medix-input" value="{{ patient.emergency_contact_no|default:'' }}" placeholder="+63 918 000 0000">
                 </div>
             </div>
 
-            <div class="form-grid-2">
+            <div class="form-grid-2" style="margin-top: 14px;">
                 <div class="form-group">
-                    <label for="gender">Gender</label>
-                    <select id="gender" name="gender" class="form-select">
+                    <label class="medix-label">Gender</label>
+                    <select name="gender" class="medix-input">
                         <option value="">-- Select --</option>
                         <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
                         <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
                         <option value="Non-Binary" {% if patient.gender == "Non-Binary" %}selected{% endif %}>Non-Binary</option>
-                        <option value="Prefer not to say" {% if patient.gender == "Prefer not to say" %}selected{% endif %}>Prefer not to say</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="address">Residential Address</label>
-                    <input type="text" id="address" name="address" value="{{ patient.address|default:'' }}" placeholder="City, Province / Region">
+                    <label class="medix-label">Residential Address</label>
+                    <input type="text" name="address" class="medix-input" value="{{ patient.address|default:'' }}" placeholder="City, Province">
                 </div>
             </div>
             {% endif %}
 
             {% if doctor %}
-            <div class="form-grid-2">
+            <div class="form-grid-2" style="margin-top: 14px;">
                 <div class="form-group">
-                    <label for="med_specialty">Medical Specialty</label>
-                    <input type="text" id="med_specialty" name="med_specialty" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology, Internal Medicine">
+                    <label class="medix-label">Medical Specialty</label>
+                    <input type="text" name="med_specialty" class="medix-input" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology">
                 </div>
                 <div class="form-group">
-                    <label for="contact_no">Clinic Phone / Hotline</label>
-                    <input type="tel" id="contact_no" name="contact_no" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
+                    <label class="medix-label">Clinic Contact</label>
+                    <input type="tel" name="contact_no" class="medix-input" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="availability_status">Practice Status</label>
-                <select id="availability_status" name="availability_status" class="form-select">
-                    <option value="available" {% if doctor.availability_status == "available" %}selected{% endif %}>Available for Telehealth &amp; Consultations</option>
-                    <option value="in_clinic" {% if doctor.availability_status == "in_clinic" %}selected{% endif %}>In Clinic (In-person appointments only)</option>
-                    <option value="off_duty" {% if doctor.availability_status == "off_duty" %}selected{% endif %}>Off Duty / On Leave</option>
-                </select>
             </div>
             {% endif %}
 
-            <div class="form-group">
-                <label for="bio">Biography / Medical Background</label>
-                <textarea id="bio" name="bio" rows="3" placeholder="Provide background information, medical history notes, or clinical qualifications...">{{ profile.bio|default:'' }}</textarea>
+            <div class="form-group" style="margin-top: 14px;">
+                <label class="medix-label">Medical Background / Biography</label>
+                <textarea name="bio" class="medix-input" rows="3" placeholder="Provide background information or clinical notes...">{{ profile.bio|default:'' }}</textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save Profile Details</button>
+            <button type="submit" class="btn-pill-action" style="margin-top: 20px; width: 100%; justify-content: center;">
+                Save Profile Information
+                <span class="btn-arrow-disc">➔</span>
+            </button>
         </form>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/profile/profile.js' %}"></script>
 {% endblock %}

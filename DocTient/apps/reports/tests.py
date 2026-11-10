@@ -79,3 +79,4 @@ class ReportsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Patient Cohort Triage Overview")
         self.assertContains(response, "Reports Patient")
+
