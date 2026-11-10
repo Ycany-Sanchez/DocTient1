@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.user_settings",
     "apps.clinic",
     "apps.messaging",
+    "apps.reports",
 ]
 
 MIDDLEWARE = [

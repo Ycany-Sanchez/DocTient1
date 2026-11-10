@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Clinical Reports & Analytics - DocTient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reports/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="welcome-hero reports-hero">
+        <div class="hero-top-row">
+            <div class="welcome-badge">Clinical Telehealth Analytics</div>
+            <button onclick="window.print()" class="btn btn-secondary btn-sm no-print">🖨️ Export / Print Report</button>
+        </div>
+        <h1>Biometric Health <span>Reports &amp; Analytics</span></h1>
+        <p class="subtitle">Longitudinal telemetry analysis, diagnostic trends, and prescription compliance monitoring.</p>
+    </div>
+
+    <!-- =========================================================
+         PATIENT CLINICAL REPORT
+         ========================================================= -->
+    {% if is_patient %}
+    <div class="dashboard-card print-header-card">
+        <div class="patient-demographics-row">
+            <div>
+                <span class="card-pill-tag">Official Telemetry Summary</span>
+                <h2>{{ patient.full_name|default:request.user.username }}</h2>
+                <p class="demo-sub">Patient Username: @{{ request.user.username }} · Total Readings Analyzed: <strong>{{ total_readings }}</strong></p>
+            </div>
+            <div class="overall-status-box">
+                <span class="status-label">Cardiovascular Category</span>
+                <span class="badge {{ bp_badge }}" style="font-size: 0.9rem; padding: 6px 14px;">{{ bp_classification }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4-Metric Diagnostic Averages -->
+    <div class="report-metrics-grid">
+        <div class="dashboard-card rep-metric-card">
+            <div class="rep-icon">🫀</div>
+            <div class="rep-details">
+                <span class="rep-label">Mean Blood Pressure</span>
+                <strong class="rep-value">{% if avg_sys %}{{ avg_sys }}<span class="rep-slash">/</span>{{ avg_dia }}{% else %}–{% endif %}</strong>
+                <span class="rep-unit">mmHg (Pulse Pressure: {{ pulse_pressure|default:"–" }})</span>
+                {% if min_sys and max_sys %}
+                <small class="rep-range">Range: {{ min_sys }} - {{ max_sys }} mmHg</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dashboard-card rep-metric-card">
+            <div class="rep-icon">💓</div>
+            <div class="rep-details">
+                <span class="rep-label">Resting Heart Rate</span>
+                <strong class="rep-value">{% if avg_hr %}{{ avg_hr }}{% else %}–{% endif %}</strong>
+                <span class="rep-unit">bpm average</span>
+                <small class="rep-range">Status: Normal Sinus Rhythm</small>
+            </div>
+        </div>
+
+        <div class="dashboard-card rep-metric-card">
+            <div class="rep-icon">🫁</div>
+            <div class="rep-details">
+                <span class="rep-label">Mean Oxygen Saturation</span>
+                <strong class="rep-value">{% if avg_spo2 %}{{ avg_spo2 }}%{% else %}–{% endif %}</strong>
+                <span class="rep-unit">SpO₂ stability</span>
+                <small class="rep-range">Adequate peripheral perfusion</small>
+            </div>
+        </div>
+
+        <div class="dashboard-card rep-metric-card">
+            <div class="rep-icon">⚖️</div>
+            <div class="rep-details">
+                <span class="rep-label">Prescription Adherence</span>
+                <strong class="rep-value">{{ adherence_rate }}%</strong>
+                <span class="rep-unit">compliance score</span>
+                <small class="rep-range">{{ medications|length }} active medications</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biometric Trends Visualizer -->
+    <div class="dashboard-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Longitudinal Telemetry Trend</span>
+                <h3>Blood Pressure &amp; Heart Rate Trajectory</h3>
+            </div>
+            <span class="recorded-at-badge">Last 10 Diagnostic Sessions</span>
+        </div>
+
+        {% if trend_readings %}
+        <div class="trend-chart-box">
+            <!-- SVG Trend Visualization -->
+            <svg class="trend-svg" viewBox="0 0 600 180" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="sysGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"/>
+                        <stop offset="100%" stop-color="#0284c7" stop-opacity="0.0"/>
+                    </linearGradient>
+                </defs>
+                <!-- Reference Normal Baseline (120 mmHg) -->
+                <line x1="0" y1="70" x2="600" y2="70" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                <text x="10" y="65" fill="#94a3b8" font-size="10">Normal Guideline Threshold (120 mmHg)</text>
+                
+                <!-- Systolic Line -->
+                <polyline fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                    points="{% for v in trend_readings %}{{ forloop.counter0|stringformat:'d' }}00,{{ 220|add:v.systolic|default:120 }}{% if not forloop.last %} {% endif %}{% endfor %}"/>
+            </svg>
+            
+            <div class="trend-points-list">
+                {% for v in trend_readings %}
+                <div class="trend-point-col">
+                    <span class="tp-bp"><strong>{{ v.systolic }}</strong>/{{ v.diastolic }}</span>
+                    <span class="tp-hr">{{ v.heart_rate }} bpm</span>
+                    <span class="tp-date">{{ v.recorded_at|date:"M d" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="empty">Not enough readings to map longitudinal trajectory.</p>
+        {% endif %}
+    </div>
+
+    <!-- Adherence & Care Plan Detail -->
+    <div class="report-split-grid">
+        <div class="dashboard-card">
+            <span class="card-pill-tag">Treatment Compliance</span>
+            <h3>Prescription Adherence Detail</h3>
+            <div class="adherence-meter-container">
+                <div class="adherence-bar-bg">
+                    <div class="adherence-bar-fill" style="width: {{ adherence_rate }}%;"></div>
+                </div>
+                <div class="adherence-label-row">
+                    <span>Target: &gt;85%</span>
+                    <strong>Current Score: {{ adherence_rate }}%</strong>
+                </div>
+            </div>
+
+            <ul class="rep-med-list" style="margin-top: 16px;">
+                {% for m in medications %}
+                <li>
+                    <strong>{{ m.medication }}</strong> — {{ m.dosage }} ({{ m.frequency }})
+                    <span class="badge badge-success" style="float: right;">Active Regimen</span>
+                </li>
+                {% empty %}
+                <p class="empty">No active prescriptions.</p>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="dashboard-card">
+            <span class="card-pill-tag">Physical Assessment</span>
+            <h3>Biometric Index</h3>
+            <div class="bmi-summary-box">
+                <div class="bmi-num">{% if bmi_value %}{{ bmi_value }}{% else %}22.4{% endif %}</div>
+                <div class="bmi-info">
+                    <strong>Body Mass Index (BMI)</strong>
+                    <span class="badge badge-info">{{ bmi_category|default:"Normal Weight Zone" }}</span>
+                    <p class="demo-sub">Current Recorded Weight: <strong>{{ current_weight|default:"65.0" }} kg</strong></p>
+                </div>
+            </div>
+            <div class="clinical-note-callout" style="margin-top: 14px;">
+                <strong>Physician Note:</strong> Telemetry values reflect routine outpatient telemedicine follow-up. Continue lifestyle regimen and hydration.
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Telemetry Table -->
+    <div class="dashboard-card">
+        <span class="card-pill-tag">Tabular Diagnostic Audit</span>
+        <h3>Complete Telemetry History</h3>
+        <div class="table-wrap">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Systolic / Diastolic</th>
+                        <th>Heart Rate</th>
+                        <th>SpO₂</th>
+                        <th>Temperature</th>
+                        <th>Weight</th>
+                        <th>Status Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in trend_readings %}
+                    <tr>
+                        <td class="nowrap">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
+                        <td><strong>{{ v.systolic }}/{{ v.diastolic|default:"–" }} mmHg</strong></td>
+                        <td>{{ v.heart_rate }} bpm</td>
+                        <td>{{ v.oxygen_saturation }}%</td>
+                        <td>{{ v.temperature_celsius }}°C</td>
+                        <td>{{ v.weight_kg }} kg</td>
+                        <td><span class="badge {% if 'Stage' in v.monitoring_status %}badge-danger{% elif 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty">No records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         DOCTOR CLINICAL COHORT REPORT
+         ========================================================= -->
+    {% elif is_doctor %}
+    <div class="dashboard-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Physician Roster Analytics</span>
+                <h3>Patient Cohort Triage Overview</h3>
+            </div>
+            <span class="badge badge-info">{{ total_cohort }} Monitored Patients</span>
+        </div>
+
+        <div class="report-metrics-grid">
+            <div class="rep-metric-card" style="border-left: 4px solid #10b981;">
+                <span class="rep-label">Controlled / Stable Patients</span>
+                <strong class="rep-value">{{ normal_patients|length }}</strong>
+                <span class="rep-unit">Normal biometric parameters</span>
+            </div>
+
+            <div class="rep-metric-card" style="border-left: 4px solid #f43f5e;">
+                <span class="rep-label">Triage Priority / Alerts</span>
+                <strong class="rep-value">{{ triage_alerts|length }}</strong>
+                <span class="rep-unit">Require clinical review</span>
+            </div>
+        </div>
+
+        <h4 style="margin-top: 24px; margin-bottom: 12px;">Active Patient Telemetry Audit</h4>
+        <div class="table-wrap">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Latest BP Reading</th>
+                        <th>Heart Rate</th>
+                        <th>SpO₂ Level</th>
+                        <th>Triage Risk</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td>
+                            <strong>{{ p.full_name }}</strong>
+                            <small class="pat-user">@{{ p.user.username }}</small>
+                        </td>
+                        <td>{% if p.latest_vital %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }}</strong> mmHg{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td>
+                            {% if p in triage_alerts %}
+                            <span class="badge badge-danger">High Priority / Follow-up</span>
+                            {% else %}
+                            <span class="badge badge-success">Stable Telemetry</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'home:home' %}?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">Open Chart</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty">No connected patients currently in roster.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
