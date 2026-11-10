@@ -145,9 +145,9 @@
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    background: var(--brand-primary);
     border-radius: var(--radius-full);
-    transition: width 0.4s ease;
+    transition: width 0.3s ease;
 }
 
 .regimen-list {

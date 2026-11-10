@@ -119,14 +119,14 @@ a:hover {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+    background: var(--brand-primary);
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.85rem;
     font-weight: 800;
-    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+    box-shadow: 0 3px 8px rgba(2, 132, 199, 0.2);
 }
 
 .brand-badge {
@@ -433,4 +433,26 @@ nav a.active {
 main {
     flex: 1;
     padding: 36px 0 60px;
+}
+
+/* =========================================================
+   Accessibility Standards (Anti-Slop Compliance)
+   ========================================================= */
+
+/* Visible High-Contrast Focus Ring */
+:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
+
+/* User Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

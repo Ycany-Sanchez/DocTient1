@@ -143,7 +143,7 @@
                     </p>
                 </div>
             </div>
-            <div style="margin-top: 16px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; background: #f8fafc; padding: 12px 14px; border-radius: var(--radius-sm); border-left: 3px solid var(--brand-primary);">
+            <div style="margin-top: 16px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; background: #f8fafc; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--surface-border);">
                 <strong>Clinical Note:</strong> Regular daily monitoring supports early detection of hypertensive variation. Maintain balanced low-sodium nutrition.
             </div>
         </div>
@@ -201,13 +201,13 @@
         </div>
 
         <div class="medix-reports-grid" style="margin-top: 16px;">
-            <div class="rep-card" style="border-left: 4px solid var(--status-success);">
+            <div class="rep-card">
                 <span class="rep-label">Controlled Telemetry</span>
                 <div class="rep-val">{{ normal_patients|length }}</div>
                 <small class="rep-sub">Patients within normal thresholds</small>
             </div>
 
-            <div class="rep-card" style="border-left: 4px solid var(--status-danger);">
+            <div class="rep-card">
                 <span class="rep-label">Triage Follow-Up Alerts</span>
                 <div class="rep-val">{{ triage_alerts|length }}</div>
                 <small class="rep-sub">Elevated/Hypertensive readings</small>

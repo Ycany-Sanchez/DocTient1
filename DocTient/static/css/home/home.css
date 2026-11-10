@@ -336,7 +336,7 @@
 }
 
 .medix-med-card.is-taken {
-    border-left: 4px solid var(--status-success);
+    border-color: var(--status-success-border);
     background: #ffffff;
 }
 
