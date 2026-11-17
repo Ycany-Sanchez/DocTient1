@@ -282,9 +282,10 @@ html, body {
 .login-visual-pane {
     position: relative;
     background-color: var(--bg-black);
-    background-image: url('/static/img/doctor_patient_hero.jpg');
+    background-image: url('/static/img/doctor_patient_hero.jpg?v=2');
     background-size: cover;
     background-position: center right;
+    image-rendering: -webkit-optimize-contrast;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
