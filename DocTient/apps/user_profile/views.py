@@ -39,8 +39,11 @@ def profile_view(request):
         messages.success(request, "Profile updated successfully.")
         return redirect("profile:profile")
 
+    connected_patient_count = doctor.patient_connections.count() if doctor else 0
+
     return render(request, "profile/profile.html", {
         "profile": profile,
         "doctor": doctor,
         "patient": patient,
+        "connected_patient_count": connected_patient_count,
     })

@@ -82,15 +82,42 @@
             {% endif %}
 
             {% if doctor %}
+            <!-- Physician Credentials Summary -->
+            <div style="margin-top: 18px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #0284c7; letter-spacing: 0.05em;">Physician Credentials</span>
+                    <h3 style="font-size: 1.15rem; margin: 2px 0; color: #0f172a;">Dr. {{ doctor.full_name|default:request.user.username }}</h3>
+                    <p style="margin: 0; font-size: 0.85rem; color: #475569;">{{ doctor.med_specialty|default:"General Practice & Telehealth" }}</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div style="text-align: right;">
+                        <small style="color: var(--text-muted); font-size: 0.72rem; display: block;">Active Cohort</small>
+                        <strong style="color: var(--brand-dark); font-size: 1.05rem;">{{ connected_patient_count }} Patients</strong>
+                    </div>
+                    <span class="badge {% if doctor.availability_status == 'available' %}badge-success{% elif doctor.availability_status == 'busy' %}badge-warning{% else %}badge-muted{% endif %}">
+                        {{ doctor.availability_status|default:"available"|title }}
+                    </span>
+                </div>
+            </div>
+
             <div class="form-grid-2" style="margin-top: 14px;">
                 <div class="form-group">
                     <label class="medix-label">Medical Specialty</label>
-                    <input type="text" name="med_specialty" class="medix-input" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology">
+                    <input type="text" name="med_specialty" class="medix-input" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology, Internal Medicine">
                 </div>
                 <div class="form-group">
                     <label class="medix-label">Clinic Contact</label>
                     <input type="tel" name="contact_no" class="medix-input" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label class="medix-label">Telehealth Availability Status</label>
+                <select name="availability_status" class="medix-input">
+                    <option value="available" {% if doctor.availability_status == 'available' %}selected{% endif %}>🟢 Available for Telehealth Consultation</option>
+                    <option value="busy" {% if doctor.availability_status == 'busy' %}selected{% endif %}>🟡 In In-Clinic Consultation</option>
+                    <option value="offline" {% if doctor.availability_status == 'offline' %}selected{% endif %}>⚪ Off-Duty / Away</option>
+                </select>
             </div>
             {% endif %}
 

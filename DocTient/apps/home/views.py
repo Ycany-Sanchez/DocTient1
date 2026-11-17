@@ -237,8 +237,22 @@ def home_view(request):
                 conn.observations = obs
                 conn.recommendations = recom
                 conn.save()
+                if obs or recom:
+                    DoctorNote.objects.create(doctor=doctor, observations=obs, recommendations=recom)
                 messages.success(request, f"Clinical observations updated for {target_patient.full_name}.")
                 return redirect(f"/home/?patient_id={target_patient.id}")
+
+        # Doctor toggles medication status (Active vs Discontinued)
+        if action == "toggle_med_status":
+            target_id = _safe_int(request.POST.get("patient_id"))
+            med_id = _safe_int(request.POST.get("medication_id"))
+            if med_id:
+                med = Medication.objects.filter(id=med_id).first()
+                if med and (med.doctor == doctor or med.patient.id in connected_ids):
+                    med.status = "discontinued" if med.status == "active" else "active"
+                    med.save()
+                    messages.success(request, f"Updated {med.medication} status to {med.status.title()}.")
+            return redirect(f"/home/?patient_id={target_id}" if target_id else "home:home")
 
     query = (request.GET.get("q") or "").strip()
     selected_id = request.GET.get("patient_id")
@@ -265,16 +279,21 @@ def home_view(request):
     selected_vitals = []
     selected_medications = []
     selected_connection = None
+    recent_notes = []
 
     if selected_id:
         try:
             selected_patient = PatientProfile.objects.select_related("user").get(id=selected_id)
             if not connected_ids or selected_patient.id in connected_ids:
                 selected_vitals = list(selected_patient.vital_signs.all()[:50])
-                selected_medications = list(selected_patient.medications.all())
+                selected_medications = list(selected_patient.medications.all().select_related("doctor"))
+                for med in selected_medications:
+                    med.taken_count = med.logs.filter(is_taken=True).count()
+                    med.total_logs = med.logs.count()
                 selected_connection = DoctorPatientConnection.objects.filter(
                     doctor=doctor, patient=selected_patient
                 ).first()
+                recent_notes = list(DoctorNote.objects.filter(doctor=doctor).order_by("-id")[:5])
             else:
                 messages.warning(request, "Add this patient to your list to access their full chart.")
                 selected_patient = None
@@ -294,4 +313,5 @@ def home_view(request):
         "selected_vitals": selected_vitals,
         "selected_medications": selected_medications,
         "selected_connection": selected_connection,
+        "recent_notes": recent_notes,
     })

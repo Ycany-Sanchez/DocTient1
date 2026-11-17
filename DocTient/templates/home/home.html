@@ -500,6 +500,39 @@
             </div>
         </div>
 
+        <!-- Active Prescriptions Management -->
+        <div class="chart-action-box" style="margin-top: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 1rem; margin: 0; color: var(--text-primary);">Prescribed Regimens ({{ selected_medications|length }})</h4>
+                <span class="badge badge-info">Treatment Plan</span>
+            </div>
+            {% if selected_medications %}
+            <div class="medix-meds-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+                {% for m in selected_medications %}
+                <div class="medix-med-card" style="padding: 14px; background: #ffffff; border: 1px solid var(--surface-border); border-radius: var(--radius-sm);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ m.medication }}</strong>
+                        <span class="badge {% if m.status == 'active' %}badge-success{% else %}badge-muted{% endif %}">{{ m.status|title }}</span>
+                    </div>
+                    <p style="margin: 0 0 6px; font-size: 0.85rem; color: var(--text-secondary);">{{ m.dosage }} · {{ m.frequency }}</p>
+                    <small style="color: var(--text-muted); font-size: 0.76rem; display: block; margin-bottom: 10px;">Prescribed: {{ m.created_at|date:"M d, Y" }}</small>
+                    <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle_med_status">
+                        <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                        <input type="hidden" name="medication_id" value="{{ m.id }}">
+                        <button type="submit" class="btn btn-sm {% if m.status == 'active' %}btn-secondary{% else %}btn-success{% endif %}" style="font-size: 0.78rem; padding: 4px 10px;">
+                            {% if m.status == 'active' %}Discontinue{% else %}Reactivate{% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">No active prescriptions on file for this patient.</p>
+            {% endif %}
+        </div>
+
         <!-- Care Plan Editor -->
         <div class="chart-action-box" style="margin-top: 18px;">
             <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-primary);">Physician Care Plan &amp; Guidance</h4>
@@ -517,6 +550,20 @@
                 </div>
                 <button type="submit" class="btn btn-sm" style="margin-top: 12px;">Update Care Plan</button>
             </form>
+
+            {% if recent_notes %}
+            <div style="margin-top: 16px; border-top: 1px solid var(--surface-border); padding-top: 12px;">
+                <h5 style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px;">Recent Clinical Observations History</h5>
+                {% for n in recent_notes %}
+                <div style="background: #f8fafc; border-radius: 4px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.84rem;">
+                    <strong style="color: var(--text-primary);">{{ n.observations|truncatechars:120 }}</strong>
+                    {% if n.recommendations %}
+                    <p style="margin: 2px 0 0; color: var(--text-secondary); font-size: 0.8rem;">Guidance: {{ n.recommendations|truncatechars:100 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
 
         <!-- Patient Telemetry Log Table -->

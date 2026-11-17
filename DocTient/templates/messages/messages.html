@@ -111,7 +111,14 @@
                         {% endif %}
                     </small>
                 </div>
-                <span class="badge badge-success">Encrypted Session</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    {% if active_user.doctor_profile %}
+                    <span class="badge {% if active_user.doctor_profile.availability_status == 'available' %}badge-success{% elif active_user.doctor_profile.availability_status == 'busy' %}badge-warning{% else %}badge-muted{% endif %}">
+                        {{ active_user.doctor_profile.availability_status|default:"available"|title }}
+                    </span>
+                    {% endif %}
+                    <span class="badge badge-success">Encrypted Session</span>
+                </div>
             </div>
 
             <div class="thread" id="chatThread">
