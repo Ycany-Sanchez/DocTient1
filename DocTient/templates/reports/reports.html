@@ -80,7 +80,7 @@
                 <span class="card-pill-tag">Longitudinal Telemetry Trend</span>
                 <h3 style="font-size: 1.25rem;">Blood Pressure Trajectory</h3>
             </div>
-            <span class="recorded-at-badge">AHA/ACC Clinical Reference Baseline (120 mmHg)</span>
+            <span class="recorded-at-badge">{{ total_readings }} Diagnostic Sessions</span>
         </div>
 
         {% if chart_points %}
@@ -214,69 +214,244 @@
          DOCTOR COHORT REPORT
          ========================================================= -->
     {% elif is_doctor %}
+    <!-- 4-Card Cohort Aggregate Analytics -->
+    <div class="medix-reports-grid">
+        <div class="rep-card">
+            <span class="rep-label">Total Cohort Size</span>
+            <div class="rep-val">{{ total_cohort }}</div>
+            <span class="badge badge-info" style="margin-top: 8px;">Active Monitoring</span>
+            <small class="rep-sub">Connected patients under your care</small>
+        </div>
+
+        <div class="rep-card">
+            <span class="rep-label">Cohort Mean BP</span>
+            <div class="rep-val">{% if cohort_avg_sys %}{{ cohort_avg_sys }}<span class="rep-slash">/</span>{{ cohort_avg_dia }}{% else %}–{% endif %} <small>mmHg</small></div>
+            <span class="badge {% if cohort_avg_sys and cohort_avg_sys >= 140 %}badge-danger{% elif cohort_avg_sys and cohort_avg_sys >= 130 %}badge-warning{% else %}badge-success{% endif %}" style="margin-top: 8px;">{% if cohort_avg_sys and cohort_avg_sys >= 140 %}Elevated Cohort{% elif cohort_avg_sys and cohort_avg_sys >= 130 %}Borderline{% else %}Within Range{% endif %}</span>
+            <small class="rep-sub">Average across latest readings</small>
+        </div>
+
+        <div class="rep-card">
+            <span class="rep-label">Controlled Readings</span>
+            <div class="rep-val">{{ controlled_pct }}<span class="rep-slash">%</span></div>
+            <span class="badge badge-success" style="margin-top: 8px;">{{ controlled_count }} of {{ total_cohort }}</span>
+            <small class="rep-sub">Patients within safe thresholds</small>
+        </div>
+
+        <div class="rep-card">
+            <span class="rep-label">Active Prescriptions</span>
+            <div class="rep-val">{{ total_active_meds }}</div>
+            <span class="badge badge-info" style="margin-top: 8px;">{{ total_meds_prescribed }} Total Issued</span>
+            <small class="rep-sub">Medications you have prescribed</small>
+        </div>
+    </div>
+
+    <!-- Secondary Stats Row -->
+    <div class="medix-reports-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
+        <div class="rep-card">
+            <span class="rep-label">Triage Alerts</span>
+            <div class="rep-val" style="color: {% if triage_alerts %}#dc2626{% else %}var(--text-primary){% endif %};">{{ triage_alerts|length }}</div>
+            <small class="rep-sub">Patients needing follow-up</small>
+        </div>
+        <div class="rep-card">
+            <span class="rep-label">Cohort Mean Heart Rate</span>
+            <div class="rep-val">{% if cohort_avg_hr %}{{ cohort_avg_hr }}{% else %}–{% endif %} <small>bpm</small></div>
+            <small class="rep-sub">Resting average across cohort</small>
+        </div>
+        <div class="rep-card">
+            <span class="rep-label">Cohort Mean SpO₂</span>
+            <div class="rep-val">{% if cohort_avg_spo2 %}{{ cohort_avg_spo2 }}{% else %}–{% endif %}<span class="rep-slash">%</span></div>
+            <small class="rep-sub">Oxygen saturation average</small>
+        </div>
+    </div>
+
+    <!-- Patient Triage Table -->
     <div class="dashboard-card">
         <div class="card-header-row">
             <div>
                 <span class="card-pill-tag">Cohort Oversight</span>
-                <h3 style="font-size: 1.35rem;">Patient Cohort Triage Overview</h3>
+                <h3 style="font-size: 1.25rem;">Patient Cohort Triage Overview</h3>
             </div>
-            <span class="badge badge-info">{{ total_cohort }} Monitored Patients</span>
+            <span class="badge badge-info">{{ total_cohort }} Monitored</span>
         </div>
 
-        <div class="medix-reports-grid" style="margin-top: 16px;">
-            <div class="rep-card">
-                <span class="rep-label">Controlled Telemetry</span>
-                <div class="rep-val">{{ normal_patients|length }}</div>
-                <small class="rep-sub">Patients within normal thresholds</small>
-            </div>
-
-            <div class="rep-card">
-                <span class="rep-label">Triage Follow-Up Alerts</span>
-                <div class="rep-val">{{ triage_alerts|length }}</div>
-                <small class="rep-sub">Elevated/Hypertensive readings</small>
-            </div>
-        </div>
-
-        <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">Active Telemetry Audit</h4>
-        <div class="table-wrap">
+        <div class="table-wrap" style="margin-top: 16px;">
             <table class="vitals-table">
                 <thead>
                     <tr>
                         <th>Patient</th>
-                        <th>Latest BP Reading</th>
+                        <th>Blood Pressure</th>
                         <th>Heart Rate</th>
                         <th>Oxygen SpO₂</th>
+                        <th>Active Meds</th>
                         <th>Triage Risk</th>
+                        <th>Last Reading</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in patients %}
+                    {% for p in triage_alerts %}
+                    <tr style="background: #fef2f2;">
+                        <td>
+                            <strong>{{ p.full_name }}</strong>
+                            <small style="display: block; color: var(--text-muted); font-size: 0.78rem;">@{{ p.user.username }}</small>
+                        </td>
+                        <td>{% if p.latest_vital and p.latest_vital.systolic %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }} mmHg</strong>{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital and p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital and p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td>{{ p.total_meds }}</td>
+                        <td><span class="badge {{ p.triage_badge }}">{{ p.triage_level }}</span></td>
+                        <td style="white-space: nowrap;">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
+                        <td>
+                            <a href="?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">View Report</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% for p in normal_patients %}
                     <tr>
                         <td>
                             <strong>{{ p.full_name }}</strong>
                             <small style="display: block; color: var(--text-muted); font-size: 0.78rem;">@{{ p.user.username }}</small>
                         </td>
-                        <td>{% if p.latest_vital %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }} mmHg</strong>{% else %}–{% endif %}</td>
-                        <td>{% if p.latest_vital %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
-                        <td>{% if p.latest_vital %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital and p.latest_vital.systolic %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }} mmHg</strong>{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital and p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td>{% if p.latest_vital and p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td>{{ p.total_meds }}</td>
+                        <td><span class="badge {{ p.triage_badge }}">{{ p.triage_level }}</span></td>
+                        <td style="white-space: nowrap;">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
                         <td>
-                            {% if p in triage_alerts %}
-                            <span class="badge badge-danger">High Priority</span>
-                            {% else %}
-                            <span class="badge badge-success">Stable</span>
-                            {% endif %}
+                            <a href="?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">View Report</a>
                         </td>
-                        <td>
-                            <a href="{% url 'home:home' %}?patient_id={{ p.id }}" class="btn btn-sm btn-secondary">Open
-                                Chart</a>
-                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not patients %}
+                    <tr>
+                        <td colspan="8" style="color: var(--text-muted); text-align: center; padding: 24px;">No connected patients yet. Add patients from the Dashboard.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Per-Patient Drill-Down Report -->
+    {% if detail_patient %}
+    <div class="dashboard-card" style="border: 2px solid var(--brand-primary); margin-top: 24px;">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Patient Detail Report</span>
+                <h3 style="font-size: 1.35rem;">{{ detail_patient.full_name }}</h3>
+                <small style="color: var(--text-muted);">@{{ detail_patient.user.username }}{% if detail_patient.gender %} · {{ detail_patient.gender }}{% endif %}{% if detail_patient.date_of_birth %} · DOB: {{ detail_patient.date_of_birth|date:"M d, Y" }}{% endif %}</small>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <a href="{% url 'messages:messages' %}?with={{ detail_patient.user.username }}" class="btn btn-sm btn-secondary">Message Patient</a>
+                <a href="{% url 'home:home' %}?patient_id={{ detail_patient.id }}" class="btn-pill-action" style="padding: 6px 8px 6px 18px; font-size: 0.82rem;">
+                    Open Chart
+                    <span class="btn-arrow-disc" style="width: 24px; height: 24px; font-size: 0.72rem;">➔</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Patient Mini Stats -->
+        <div class="medix-reports-grid" style="margin-top: 16px;">
+            <div class="rep-card">
+                <span class="rep-label">Total Readings</span>
+                <div class="rep-val">{{ detail_vitals|length }}</div>
+            </div>
+            <div class="rep-card">
+                <span class="rep-label">Active Medications</span>
+                <div class="rep-val">{{ detail_medications|length }}</div>
+            </div>
+            <div class="rep-card">
+                <span class="rep-label">Medication Adherence</span>
+                <div class="rep-val">{{ detail_adherence }}<span class="rep-slash">%</span></div>
+            </div>
+            <div class="rep-card">
+                <span class="rep-label">Latest BP</span>
+                <div class="rep-val">{% if detail_vitals %}{{ detail_vitals.0.systolic }}<span class="rep-slash">/</span>{{ detail_vitals.0.diastolic }}{% else %}–{% endif %}</div>
+            </div>
+        </div>
+
+        {% if detail_connection %}
+        <div style="margin-top: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-sm); padding: 14px 16px;">
+            {% if detail_connection.observations %}
+            <p style="font-size: 0.9rem; color: #0369a1; margin-bottom: 6px;"><strong>Your Assessment:</strong> {{ detail_connection.observations }}</p>
+            {% endif %}
+            {% if detail_connection.recommendations %}
+            <p style="font-size: 0.9rem; color: #0369a1; margin: 0;"><strong>Care Instructions:</strong> {{ detail_connection.recommendations }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Active Medications List -->
+        {% if detail_medications %}
+        <h4 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.05rem;">Active Prescriptions</h4>
+        <div class="regimen-list">
+            {% for m in detail_medications %}
+            <div class="regimen-item">
+                <div>
+                    <strong>{{ m.medication }}</strong>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">{{ m.dosage }} · {{ m.frequency }}</p>
+                </div>
+                <span class="badge badge-success">Active</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Vitals History Table -->
+        <h4 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.05rem;">Telemetry Records ({{ detail_vitals|length }})</h4>
+        <div class="table-wrap">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Blood Pressure</th>
+                        <th>Heart Rate</th>
+                        <th>Oxygen SpO₂</th>
+                        <th>Temperature</th>
+                        <th>Weight</th>
+                        <th>Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in detail_vitals %}
+                    <tr>
+                        <td style="white-space: nowrap; font-weight: 600;">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
+                        <td><strong>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} mmHg{% else %}–{% endif %}</strong></td>
+                        <td>{{ v.heart_rate|default:"–" }} bpm</td>
+                        <td>{{ v.oxygen_saturation|default:"–" }}%</td>
+                        <td>{{ v.temperature_celsius|default:"–" }}°C</td>
+                        <td>{{ v.weight_kg|default:"–" }} kg</td>
+                        <td><span class="badge {% if v.monitoring_status and 'Stage' in v.monitoring_status %}badge-danger{% elif v.monitoring_status and 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="color: var(--text-muted);">No vital sign records found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% endif %}
+
+    <!-- Doctor Clinical Notes History -->
+    {% if doctor_notes %}
+    <div class="dashboard-card" style="margin-top: 24px;">
+        <span class="card-pill-tag">Clinical Notes Archive</span>
+        <h3 style="font-size: 1.25rem; margin-bottom: 14px;">Your Clinical Notes</h3>
+        {% for note in doctor_notes %}
+        <div style="padding: 12px 16px; background: #f8fafc; border: 1px solid var(--surface-border); border-radius: var(--radius-sm); margin-bottom: 8px;">
+            {% if note.observations %}
+            <p style="font-size: 0.9rem; margin-bottom: 4px;"><strong>Observation:</strong> {{ note.observations }}</p>
+            {% endif %}
+            {% if note.recommendations %}
+            <p style="font-size: 0.9rem; margin: 0; color: var(--text-secondary);"><strong>Recommendation:</strong> {{ note.recommendations }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endif %}
 
 </div>

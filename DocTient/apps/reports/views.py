@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 
 from apps.clinic.models import (
     DoctorPatientConnection,
+    DoctorNote,
     DoctorProfile,
     PatientProfile,
     VitalSign,
@@ -177,21 +178,90 @@ def reports_view(request):
         DoctorPatientConnection.objects.filter(doctor=doctor).select_related("patient__user")
     )
     patient_ids = [c.patient_id for c in connections]
-    patients = PatientProfile.objects.filter(id__in=patient_ids).select_related("user")
+    patients = list(PatientProfile.objects.filter(id__in=patient_ids).select_related("user"))
 
     triage_alerts = []
     normal_patients = []
+    all_sys = []
+    all_dia = []
+    all_hr = []
+    all_spo2 = []
+    total_meds_prescribed = 0
+    total_active_meds = 0
+
     for p in patients:
         latest = p.vital_signs.first()
         p.latest_vital = latest
+        p.active_meds = list(p.medications.filter(status="active"))
+        p.total_meds = len(p.active_meds)
+        total_meds_prescribed += Medication.objects.filter(doctor=doctor, patient=p).count()
+        total_active_meds += Medication.objects.filter(doctor=doctor, patient=p, status="active").count()
+
+        if latest:
+            if latest.systolic:
+                all_sys.append(latest.systolic)
+            if latest.diastolic:
+                all_dia.append(latest.diastolic)
+            if latest.heart_rate:
+                all_hr.append(latest.heart_rate)
+            if latest.oxygen_saturation:
+                all_spo2.append(float(latest.oxygen_saturation))
+
         if latest and (
             (latest.systolic and latest.systolic >= 140)
             or (latest.diastolic and latest.diastolic >= 90)
             or (latest.oxygen_saturation and float(latest.oxygen_saturation) < 92)
         ):
+            p.triage_level = "High Priority"
+            p.triage_badge = "badge-danger"
             triage_alerts.append(p)
-        else:
+        elif latest and (
+            (latest.systolic and latest.systolic >= 130)
+            or (latest.diastolic and latest.diastolic >= 80)
+        ):
+            p.triage_level = "Elevated"
+            p.triage_badge = "badge-warning"
             normal_patients.append(p)
+        else:
+            p.triage_level = "Stable"
+            p.triage_badge = "badge-success"
+            normal_patients.append(p)
+
+        # Recent vitals for per-patient mini table
+        p.recent_vitals = list(p.vital_signs.all()[:5])
+
+    # Cohort aggregate statistics
+    cohort_avg_sys = round(sum(all_sys) / len(all_sys)) if all_sys else None
+    cohort_avg_dia = round(sum(all_dia) / len(all_dia)) if all_dia else None
+    cohort_avg_hr = round(sum(all_hr) / len(all_hr)) if all_hr else None
+    cohort_avg_spo2 = round(sum(all_spo2) / len(all_spo2), 1) if all_spo2 else None
+    controlled_count = len([p for p in patients if p.triage_level == "Stable"])
+    controlled_pct = round((controlled_count / len(patients)) * 100) if patients else 0
+
+    # Per-patient drill-down (optional query param)
+    detail_patient = None
+    detail_vitals = []
+    detail_medications = []
+    detail_adherence = 100
+    detail_connection = None
+    detail_id = request.GET.get("patient_id")
+    if detail_id:
+        try:
+            detail_patient = PatientProfile.objects.select_related("user").get(id=detail_id)
+            if detail_patient.id in patient_ids:
+                detail_vitals = list(detail_patient.vital_signs.all()[:20])
+                detail_medications = list(detail_patient.medications.filter(status="active"))
+                total_logs = MedicationLog.objects.filter(medication__patient=detail_patient).count()
+                taken_logs = MedicationLog.objects.filter(medication__patient=detail_patient, is_taken=True).count()
+                detail_adherence = round((taken_logs / total_logs) * 100) if total_logs > 0 else 100
+                detail_connection = DoctorPatientConnection.objects.filter(
+                    doctor=doctor, patient=detail_patient
+                ).first()
+        except PatientProfile.DoesNotExist:
+            detail_patient = None
+
+    # Doctor notes history
+    doctor_notes = list(DoctorNote.objects.filter(doctor=doctor).order_by("-id")[:20])
 
     return render(request, "reports/reports.html", {
         "is_doctor": True,
@@ -200,5 +270,19 @@ def reports_view(request):
         "triage_alerts": triage_alerts,
         "normal_patients": normal_patients,
         "patients": patients,
+        "cohort_avg_sys": cohort_avg_sys,
+        "cohort_avg_dia": cohort_avg_dia,
+        "cohort_avg_hr": cohort_avg_hr,
+        "cohort_avg_spo2": cohort_avg_spo2,
+        "controlled_count": controlled_count,
+        "controlled_pct": controlled_pct,
+        "total_meds_prescribed": total_meds_prescribed,
+        "total_active_meds": total_active_meds,
+        "detail_patient": detail_patient,
+        "detail_vitals": detail_vitals,
+        "detail_medications": detail_medications,
+        "detail_adherence": detail_adherence,
+        "detail_connection": detail_connection,
+        "doctor_notes": doctor_notes,
     })
 
