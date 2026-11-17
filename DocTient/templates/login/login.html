@@ -4,42 +4,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - DocTient</title>
+    <title>Sign In - DocTient Telehealth</title>
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
 </head>
-<body class="auth-page">
-    <div class="auth-card">
-        <div class="auth-header">
-            <span class="auth-brand-logo">DocTient</span>
-            <h2>Welcome Back</h2>
-            <p>Sign in to access your healthcare records</p>
-        </div>
+<body class="login-landing-page">
 
-        {% if error %}
-            <div class="message error">{{ error }}</div>
-        {% endif %}
+    <div class="landing-shell">
 
-        <form method="post" class="auth-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+        <!-- ==========================================
+             HERO WRAPPER WITH BACKGROUND PHOTOGRAPH
+             ========================================== -->
+        <section class="landing-hero-card">
+            
+            <!-- Floating Pill Navigation Bar -->
+            <header class="hero-top-nav">
+                <a href="{% url 'login:login' %}" class="hero-brand">
+                    <span class="hero-brand-glyph">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </span>
+                    <strong>DocTient</strong>
+                </a>
+
+                <nav class="hero-nav-pill-menu">
+                    <span class="nav-pill-item active">Telehealth</span>
+                    <span class="nav-pill-item">Biometrics</span>
+                    <span class="nav-pill-item">Clinical Audit</span>
+                    <span class="nav-pill-item">Prescriptions</span>
+                    <span class="nav-pill-item">Support</span>
+                </nav>
+
+                <div class="hero-nav-actions">
+                    <a href="{% url 'register:register' %}" class="btn-hero-coral">Create Account</a>
+                    <a href="#signInBox" class="btn-hero-outline">Sign In</a>
+                </div>
+            </header>
+
+            <!-- Hero Main Split Layout -->
+            <div class="hero-split-body">
+                
+                <!-- Left Column: Editorial Display Typography -->
+                <div class="hero-editorial">
+                    <span class="hero-eyebrow">Enterprise Telehealth Platform</span>
+                    <h1 class="hero-headline">Clinical Telehealth &amp; Patient Care</h1>
+                    <p class="hero-lead">
+                        Trusted by enterprise healthcare networks, attending physicians, and clinical practitioners world-wide. Real-time patient telemetry with seamless physician oversight.
+                    </p>
+
+                    <div class="hero-cta-buttons">
+                        <a href="{% url 'register:register' %}" class="btn-hero-coral">
+                            Get Started
+                            <span class="cta-arrow">➔</span>
+                        </a>
+                        <a href="#solutionsSection" class="btn-hero-translucent">
+                            Explore Services
+                        </a>
+                    </div>
+
+                    <!-- Floating Certified Telehealth Pill Badge -->
+                    <div class="floating-telemetry-badge">
+                        <img src="{% static 'img/doctor_patient_hero.jpg' %}" alt="Physician thumbnail" class="badge-avatar-thumb">
+                        <div>
+                            <strong>Clinical Telemetry Sync</strong>
+                            <small>Encrypted &amp; Medically Certified</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sleek Auth Sign-In Card -->
+                <div class="hero-auth-column" id="signInBox">
+                    <div class="auth-glass-card">
+                        <div class="auth-card-top">
+                            <span class="auth-portal-tag">Secure Portal Access</span>
+                            <h2 class="auth-title">Sign In</h2>
+                            <p class="auth-subtitle">Access your clinical dashboard &amp; telemetry records</p>
+                        </div>
+
+                        {% if error %}
+                            <div class="message error" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endif %}
+
+                        <form method="post" class="auth-form-body">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="username" class="auth-label">Account Username</label>
+                                <input type="text" id="username" name="username" class="auth-input" placeholder="e.g. physician_sanchez" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <label for="password" class="auth-label">Password</label>
+                                </div>
+                                <input type="password" id="password" name="password" class="auth-input" placeholder="••••••••••••" required>
+                            </div>
+                            <button type="submit" class="btn-pill-action auth-submit-btn">
+                                Sign In
+                                <span class="btn-arrow-disc">➔</span>
+                            </button>
+                        </form>
+
+                        <div class="auth-card-footer">
+                            <span>Don't have an account yet?</span>
+                            <a href="{% url 'register:register' %}" class="auth-register-link">Create Account</a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="btn-pill-action" style="width: 100%; justify-content: center; margin-top: 10px;">
-                Sign In
-                <span class="btn-arrow-disc">➔</span>
-            </button>
-        </form>
 
-        <div class="auth-footer">
-            Don't have an account? <a href="{% url 'register:register' %}">Create account</a>
-        </div>
+        </section>
+
+        <!-- ==========================================
+             SOLUTIONS / "I WANT TO" INTERACTIVE SECTION
+             ========================================== -->
+        <section class="landing-solutions-section" id="solutionsSection">
+            <span class="section-tag-label">Solutions</span>
+            <h2 class="solutions-title">I Want To:</h2>
+
+            <!-- Filter Tabs Row -->
+            <div class="solutions-tabs-bar">
+                <span class="sol-tab active">• Monitor Remote Telemetry</span>
+                <span class="sol-tab">• Cohort Risk Triage</span>
+                <span class="sol-tab">• Manage Prescriptions</span>
+                <span class="sol-tab">• Direct Telehealth Chat</span>
+            </div>
+
+            <!-- Featured Showcase Card -->
+            <div class="solutions-showcase-card">
+                <div class="showcase-num">01</div>
+                <div class="showcase-content-grid">
+                    <div class="showcase-image-box">
+                        <img src="{% static 'img/doctor_patient_hero.jpg' %}" alt="Physician and patient consultation" class="showcase-img">
+                    </div>
+                    <div class="showcase-text-box">
+                        <h3 class="showcase-heading">Monitor Remote Telemetry</h3>
+                        <p class="showcase-desc">
+                            Continuous biometric logging of blood pressure, resting heart rate, oxygen saturation, and body temperature. Telemetry models immediately evaluate vital trends against clinical thresholds.
+                        </p>
+                        <div class="showcase-badges">
+                            <span class="badge badge-success">Live Synchronization</span>
+                            <span class="badge badge-info">AHA/ACC Aligned</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="showcase-progress-indicator">
+                    <span class="prog-label">01 / 04</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SERVICES / SUBSCRIPTION PLANS SECTION
+             ========================================== -->
+        <section class="landing-services-section">
+            <span class="section-tag-label">Services</span>
+            <h2 class="services-title">Clinical Telehealth Plans</h2>
+            <p class="services-subtitle">
+                Unlock the future of remote patient monitoring with DocTient. Complete digital health infrastructure for hospital networks, specialized clinics, and independent medical practices.
+            </p>
+
+            <div class="services-grid-3">
+                <div class="service-box">
+                    <span class="srv-badge">Patient Plan</span>
+                    <h4>Personal Telehealth</h4>
+                    <p>Track personal vital history, receive automated medication reminders, and consult directly with attending doctors.</p>
+                </div>
+                <div class="service-box featured">
+                    <span class="srv-badge">Physician Plan</span>
+                    <h4>Clinical Practice</h4>
+                    <p>Manage connected patient cohorts, review triage alerts, record in-clinic diagnostic vitals, and issue prescriptions.</p>
+                </div>
+                <div class="service-box">
+                    <span class="srv-badge">Enterprise</span>
+                    <h4>Hospital Network</h4>
+                    <p>Unified electronic biometric audit, multi-physician collaboration, and encrypted longitudinal telemetry analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Landing Footer -->
+        <footer class="landing-footer">
+            <div class="footer-left">
+                <strong>DocTient Telehealth Platform</strong> · Advanced Biometric Telemetry &amp; Clinical Audit
+            </div>
+            <div class="footer-right">
+                Encrypted &amp; Medically Certified Architecture
+            </div>
+        </footer>
+
     </div>
+
     <script src="{% static 'js/login/login.js' %}"></script>
 </body>
 </html>
