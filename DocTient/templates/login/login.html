@@ -5,213 +5,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In — DocTient Telehealth</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'css/login/login.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/login/login.css' %}?v=4">
 </head>
-<body class="login-landing-page">
+<body class="login-split-page">
 
-    <div class="landing-shell">
-
-        <!-- ==========================================
-             HERO CONTAINER WITH MEDICAL PHOTOGRAPHY
-             ========================================== -->
-        <header class="landing-hero-card">
-            
-            <!-- Top Pill Navigation Bar (Next World Inspired) -->
-            <nav class="hero-top-nav" aria-label="Main Navigation">
-                <a href="{% url 'login:login' %}" class="hero-brand">
-                    <span class="hero-brand-glyph" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                        </svg>
-                    </span>
-                    <span>DocTient</span>
-                </a>
-
-                <div class="hero-nav-pill-menu" role="menubar">
-                    <span class="nav-pill-item active" role="menuitem">Telehealth</span>
-                    <span class="nav-pill-item" role="menuitem">Biometrics</span>
-                    <span class="nav-pill-item" role="menuitem">Clinical Cohort</span>
-                    <span class="nav-pill-item" role="menuitem">Prescriptions</span>
-                    <span class="nav-pill-item" role="menuitem">Support</span>
-                </div>
-
-                <div class="hero-nav-actions">
-                    <a href="{% url 'register:register' %}" class="btn-hero-coral">Create Account</a>
-                    <a href="#signInCard" class="btn-hero-outline">Sign In</a>
-                </div>
-            </nav>
-
-            <!-- Hero Body: 2-Column Split -->
-            <div class="hero-split-body">
-                
-                <!-- Left: Editorial Typography & Brand Promise -->
-                <div class="hero-editorial">
-                    <h1 class="hero-headline">Clinical Telehealth &amp; Patient Care</h1>
-                    <p class="hero-lead">
-                        Precision biometric telemetry and encrypted direct consultation between attending physicians and connected patients. Built for clinical safety, adherence tracking, and remote cardiovascular monitoring.
-                    </p>
-
-                    <div class="hero-cta-buttons">
-                        <a href="{% url 'register:register' %}" class="btn-hero-coral">
-                            Get Started
-                            <span class="cta-arrow" aria-hidden="true">➔</span>
-                        </a>
-                        <a href="#solutionsSection" class="btn-hero-translucent">
-                            Explore Services
-                        </a>
-                    </div>
-
-                    <!-- Verified Telehealth Live Status Pill -->
-                    <div class="floating-telemetry-badge">
-                        <img src="{% static 'img/doctor_patient_hero.jpg' %}" alt="Attending physician" class="badge-avatar-thumb" width="38" height="38">
-                        <div>
-                            <strong>Clinical Telemetry Sync</strong>
-                            <small>Continuous Hemodynamic Monitoring</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: Sleek, High-Contrast Auth Card -->
-                <div class="hero-auth-column">
-                    <div class="auth-elevated-card" id="signInCard">
-                        <div class="auth-card-top">
-                            <h2 class="auth-title">Sign In</h2>
-                            <p class="auth-subtitle">Access your clinical dashboard &amp; patient records</p>
-                        </div>
-
-                        {% if error %}
-                            <div class="message error" role="alert">
-                                {{ error }}
-                            </div>
-                        {% endif %}
-
-                        <form method="post" class="auth-form-body" novalidate>
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label for="username" class="auth-label">Username</label>
-                                <input 
-                                    type="text" 
-                                    id="username" 
-                                    name="username" 
-                                    class="auth-input" 
-                                    placeholder="Enter your username" 
-                                    autocomplete="username"
-                                    required 
-                                    autofocus
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="password" class="auth-label">Password</label>
-                                <input 
-                                    type="password" 
-                                    id="password" 
-                                    name="password" 
-                                    class="auth-input" 
-                                    placeholder="Enter your password" 
-                                    autocomplete="current-password"
-                                    required
-                                >
-                            </div>
-
-                            <button type="submit" class="btn-pill-action auth-submit-btn">
-                                Sign In
-                                <span class="btn-arrow-disc" aria-hidden="true">➔</span>
-                            </button>
-                        </form>
-
-                        <div class="auth-card-footer">
-                            <span>Don't have an account?</span>
-                            <a href="{% url 'register:register' %}" class="auth-register-link">Create Account</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </header>
+    <div class="login-viewport">
 
         <!-- ==========================================
-             SOLUTIONS / "I WANT TO" INTERACTIVE SECTION
+             LEFT COLUMN: BRANDING & AUTH FORM
              ========================================== -->
-        <section class="landing-solutions-section" id="solutionsSection">
-            <h2 class="solutions-title">I Want To:</h2>
+        <main class="login-form-pane">
+            <div class="login-form-content">
 
-            <!-- Solutions Filter Tabs -->
-            <div class="solutions-tabs-bar" role="tablist">
-                <button type="button" class="sol-tab active" role="tab" aria-selected="true">• Remote Patient Telemetry</button>
-                <button type="button" class="sol-tab" role="tab" aria-selected="false">Cohort Risk Triage</button>
-                <button type="button" class="sol-tab" role="tab" aria-selected="false">Prescription Oversight</button>
-                <button type="button" class="sol-tab" role="tab" aria-selected="false">Direct Physician Chat</button>
-            </div>
+                <!-- Brand Header -->
+                <header class="login-brand-header">
+                    <a href="{% url 'login:login' %}" class="login-brand-link">
+                        <span class="login-brand-glyph" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </span>
+                        <span class="login-brand-name">DocTient</span>
+                    </a>
+                    <span class="login-brand-tag">Clinical Telehealth</span>
+                </header>
 
-            <!-- Showcase Card with Doctor-Patient Photography -->
-            <div class="solutions-showcase-card">
-                <div class="showcase-content-grid">
-                    <div class="showcase-image-box">
-                        <img 
-                            src="{% static 'img/doctor_patient_hero.jpg' %}" 
-                            alt="Physician and patient in consultation review" 
-                            class="showcase-img"
-                            width="280"
-                            height="190"
+                <!-- Form Heading -->
+                <div class="login-title-block">
+                    <h1 class="login-main-title">Sign In</h1>
+                    <p class="login-lead-text">Access your clinical dashboard, biometric telemetry, and patient records.</p>
+                </div>
+
+                <!-- Error Alert -->
+                {% if error %}
+                    <div class="login-error-alert" role="alert">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <!-- Auth Form -->
+                <form method="post" class="login-auth-form" novalidate>
+                    {% csrf_token %}
+
+                    <div class="form-field-group">
+                        <label for="username" class="field-label">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="field-text-input" 
+                            placeholder="Enter your username" 
+                            autocomplete="username" 
+                            required 
+                            autofocus
                         >
                     </div>
-                    <div class="showcase-text-box">
-                        <h3 class="showcase-heading">Remote Patient Telemetry</h3>
-                        <p class="showcase-desc">
-                            Continuous biometric logging of resting blood pressure, pulse, pulse oximetry, and temperature. Automated risk stratification alerts attending physicians to hypertensive escalation and oxygen desaturation in real time.
-                        </p>
-                        <div class="showcase-badges">
-                            <span class="badge badge-success">Active Telemetry</span>
-                            <span class="badge badge-info">AHA/ACC Aligned</span>
-                            <span class="badge badge-muted">Encrypted Stream</span>
-                        </div>
+
+                    <div class="form-field-group">
+                        <label for="password" class="field-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="field-text-input" 
+                            placeholder="Enter your password" 
+                            autocomplete="current-password" 
+                            required
+                        >
                     </div>
-                </div>
+
+                    <button type="submit" class="login-submit-button">
+                        Sign In
+                        <span class="button-arrow" aria-hidden="true">➔</span>
+                    </button>
+                </form>
+
+                <!-- Footer Navigation -->
+                <footer class="login-form-footer">
+                    <p class="signup-prompt">
+                        Don't have an account? 
+                        <a href="{% url 'register:register' %}" class="signup-link">Create account</a>
+                    </p>
+                    <p class="security-note">
+                        Encrypted clinical transmission · HIPAA compliant protocol
+                    </p>
+                </footer>
+
             </div>
-        </section>
+        </main>
 
         <!-- ==========================================
-             CLINICAL SERVICES SECTION
+             RIGHT COLUMN: MEDICAL PHOTOGRAPHY WITH GRADIENT
              ========================================== -->
-        <section class="landing-services-section">
-            <h2 class="services-title">Clinical Telehealth Capabilities</h2>
-            <p class="services-subtitle">
-                Designed for clinical reliability, data sovereignty, and intuitive daily monitoring across modern healthcare practices.
-            </p>
-
-            <div class="services-grid-3">
-                <article class="service-box">
-                    <span class="srv-badge">Patient Monitoring</span>
-                    <h4>Biometric Tracking</h4>
-                    <p>Log daily physiological readings, record symptoms, track medication adherence, and receive automatic guideline feedback.</p>
-                </article>
-
-                <article class="service-box featured">
-                    <span class="srv-badge">Physician Practice</span>
-                    <h4>Clinical Management</h4>
-                    <p>Monitor cohort triage boards, record diagnostic in-clinic vitals, issue tailored prescriptions, and maintain clinical care plans.</p>
-                </article>
-
-                <article class="service-box">
-                    <span class="srv-badge">Telehealth Infrastructure</span>
-                    <h4>Encrypted Consultation</h4>
-                    <p>Cross-role clinical messaging channel with physician availability status, read receipts, and longitudinal audit export.</p>
-                </article>
+        <aside class="login-visual-pane" aria-hidden="true">
+            <div class="visual-gradient-overlay"></div>
+            <div class="visual-quote-container">
+                <blockquote class="visual-quote">
+                    "Precision biometric telemetry and continuous patient monitoring."
+                </blockquote>
+                <p class="visual-caption">Attending Physician Oversight &amp; Longitudinal Care</p>
             </div>
-        </section>
-
-        <!-- Clean Footer -->
-        <footer class="landing-footer">
-            <div class="footer-left">
-                <strong>DocTient Telehealth Platform</strong> · Advanced Biometric Telemetry &amp; Clinical Audit
-            </div>
-            <div class="footer-right">
-                Encrypted &amp; Medically Certified Architecture
-            </div>
-        </footer>
+        </aside>
 
     </div>
 
