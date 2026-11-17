@@ -214,64 +214,28 @@
          DOCTOR COHORT REPORT
          ========================================================= -->
     {% elif is_doctor %}
-    <!-- 4-Card Cohort Aggregate Analytics -->
-    <div class="medix-reports-grid">
-        <div class="rep-card">
-            <span class="rep-label">Total Cohort Size</span>
-            <div class="rep-val">{{ total_cohort }}</div>
-            <span class="badge badge-info" style="margin-top: 8px;">Active Monitoring</span>
-            <small class="rep-sub">Connected patients under your care</small>
-        </div>
-
-        <div class="rep-card">
-            <span class="rep-label">Cohort Mean BP</span>
-            <div class="rep-val">{% if cohort_avg_sys %}{{ cohort_avg_sys }}<span class="rep-slash">/</span>{{ cohort_avg_dia }}{% else %}–{% endif %} <small>mmHg</small></div>
-            <span class="badge {% if cohort_avg_sys and cohort_avg_sys >= 140 %}badge-danger{% elif cohort_avg_sys and cohort_avg_sys >= 130 %}badge-warning{% else %}badge-success{% endif %}" style="margin-top: 8px;">{% if cohort_avg_sys and cohort_avg_sys >= 140 %}Elevated Cohort{% elif cohort_avg_sys and cohort_avg_sys >= 130 %}Borderline{% else %}Within Range{% endif %}</span>
-            <small class="rep-sub">Average across latest readings</small>
-        </div>
-
-        <div class="rep-card">
-            <span class="rep-label">Controlled Readings</span>
-            <div class="rep-val">{{ controlled_pct }}<span class="rep-slash">%</span></div>
-            <span class="badge badge-success" style="margin-top: 8px;">{{ controlled_count }} of {{ total_cohort }}</span>
-            <small class="rep-sub">Patients within safe thresholds</small>
-        </div>
-
-        <div class="rep-card">
-            <span class="rep-label">Active Prescriptions</span>
-            <div class="rep-val">{{ total_active_meds }}</div>
-            <span class="badge badge-info" style="margin-top: 8px;">{{ total_meds_prescribed }} Total Issued</span>
-            <small class="rep-sub">Medications you have prescribed</small>
-        </div>
-    </div>
-
-    <!-- Secondary Stats Row -->
-    <div class="medix-reports-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
-        <div class="rep-card">
-            <span class="rep-label">Triage Alerts</span>
-            <div class="rep-val" style="color: {% if triage_alerts %}#dc2626{% else %}var(--text-primary){% endif %};">{{ triage_alerts|length }}</div>
-            <small class="rep-sub">Patients needing follow-up</small>
-        </div>
-        <div class="rep-card">
-            <span class="rep-label">Cohort Mean Heart Rate</span>
-            <div class="rep-val">{% if cohort_avg_hr %}{{ cohort_avg_hr }}{% else %}–{% endif %} <small>bpm</small></div>
-            <small class="rep-sub">Resting average across cohort</small>
-        </div>
-        <div class="rep-card">
-            <span class="rep-label">Cohort Mean SpO₂</span>
-            <div class="rep-val">{% if cohort_avg_spo2 %}{{ cohort_avg_spo2 }}{% else %}–{% endif %}<span class="rep-slash">%</span></div>
-            <small class="rep-sub">Oxygen saturation average</small>
-        </div>
-    </div>
-
     <!-- Patient Triage Table -->
     <div class="dashboard-card">
         <div class="card-header-row">
             <div>
                 <span class="card-pill-tag">Cohort Oversight</span>
-                <h3 style="font-size: 1.25rem;">Patient Cohort Triage Overview</h3>
+                <h3 style="font-size: 1.35rem;">Patient Cohort Triage Overview</h3>
             </div>
-            <span class="badge badge-info">{{ total_cohort }} Monitored</span>
+            <span class="badge badge-info">{{ total_cohort }} Monitored Patients</span>
+        </div>
+
+        <div class="medix-reports-grid" style="margin-top: 16px;">
+            <div class="rep-card">
+                <span class="rep-label">Controlled Telemetry</span>
+                <div class="rep-val">{{ normal_patients|length }}</div>
+                <small class="rep-sub">Patients within normal thresholds</small>
+            </div>
+
+            <div class="rep-card">
+                <span class="rep-label">Triage Follow-Up Alerts</span>
+                <div class="rep-val">{{ triage_alerts|length }}</div>
+                <small class="rep-sub">Elevated/Hypertensive readings</small>
+            </div>
         </div>
 
         <div class="table-wrap" style="margin-top: 16px;">
