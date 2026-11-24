@@ -517,7 +517,22 @@
     });
   }
 
+  function initDynamicBars() {
+    document.querySelectorAll('[data-width], [data-left], [data-right]').forEach((el) => {
+      const w = el.getAttribute('data-width');
+      const l = el.getAttribute('data-left');
+      const r = el.getAttribute('data-right');
+      if (w) el.style.width = w;
+      if (l) el.style.left = l;
+      if (r) el.style.right = r;
+    });
+  }
+
+  // Hydrate bar geometry immediately before first paint (script loads at end of <body>)
+  initDynamicBars();
+
   document.addEventListener('DOMContentLoaded', () => {
+    initDynamicBars();
     initSidebar();
     initTelemetryDecks();
     initReportAnalytics();

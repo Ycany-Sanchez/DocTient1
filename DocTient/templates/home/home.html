@@ -126,17 +126,17 @@
                         <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
                     {% else %}
                         {% if g.danger_low_end %}
-                        <span class="range-zone zone-danger zone-danger-left" style="width: {{ g.danger_low_end }}%;"></span>
+                        <span class="range-zone zone-danger zone-danger-left" data-width="{{ g.danger_low_end }}%"></span>
                         {% endif %}
-                        <span class="range-zone zone-safe" style="left: {{ g.danger_low_end|default:0 }}%; right: calc(100% - {{ g.warn_start }}%); border-radius: 0;"></span>
-                        <span class="range-zone zone-warn" style="left: {{ g.warn_start }}%; width: calc({{ g.danger_start }}% - {{ g.warn_start }}%);"></span>
-                        <span class="range-zone zone-danger zone-danger-right" style="left: {{ g.danger_start }}%;"></span>
+                        <span class="range-zone zone-safe" data-left="{{ g.danger_low_end|default:0 }}%" data-right="calc(100% - {{ g.warn_start }}%)" style="border-radius: 0;"></span>
+                        <span class="range-zone zone-warn" data-left="{{ g.warn_start }}%" data-width="calc({{ g.danger_start }}% - {{ g.warn_start }}%)"></span>
+                        <span class="range-zone zone-danger zone-danger-right" data-left="{{ g.danger_start }}%"></span>
                     {% endif %}
                     {% if g.marker_pct is not None %}
                         {% if g.state == "danger" or g.state == "warn" %}
-                        <span class="range-active-fill" style="width: {{ g.marker_pct }}%;"></span>
+                        <span class="range-active-fill" data-width="{{ g.marker_pct }}%"></span>
                         {% endif %}
-                        <span class="range-marker" style="left: {{ g.marker_pct }}%;"></span>
+                        <span class="range-marker" data-left="{{ g.marker_pct }}%"></span>
                     {% endif %}
                 </span>
                 <span class="kpi-note">{{ g.range_note }}</span>
@@ -183,7 +183,7 @@
                             aria-valuemin="0"
                             aria-valuemax="100"
                             aria-valuenow="{{ today_adherence_pct }}"
-                            style="width: {{ today_adherence_pct }}%;"
+                            data-width="{{ today_adherence_pct }}%"
                         ></div>
                     </div>
                 </div>
@@ -455,7 +455,7 @@
                                 {% if p.bp_marker_pct is not None %}
                                 <span class="mini-range {% if p.eval_badge == 'badge-danger' %}is-danger{% elif p.eval_badge == 'badge-warning' %}is-warn{% endif %}" aria-hidden="true">
                                     <span class="mini-range-danger"></span>
-                                    <span class="mini-range-dot" style="left: {{ p.bp_marker_pct }}%;"></span>
+                                    <span class="mini-range-dot" data-left="{{ p.bp_marker_pct }}%"></span>
                                 </span>
                                 {% endif %}
                             {% else %}–{% endif %}
@@ -517,17 +517,17 @@
                         <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
                     {% else %}
                         {% if g.danger_low_end %}
-                        <span class="range-zone zone-danger zone-danger-left" style="width: {{ g.danger_low_end }}%;"></span>
+                        <span class="range-zone zone-danger zone-danger-left" data-width="{{ g.danger_low_end }}%"></span>
                         {% endif %}
-                        <span class="range-zone zone-safe" style="left: {{ g.danger_low_end|default:0 }}%; right: calc(100% - {{ g.warn_start }}%); border-radius: 0;"></span>
-                        <span class="range-zone zone-warn" style="left: {{ g.warn_start }}%; width: calc({{ g.danger_start }}% - {{ g.warn_start }}%);"></span>
-                        <span class="range-zone zone-danger zone-danger-right" style="left: {{ g.danger_start }}%;"></span>
+                        <span class="range-zone zone-safe" data-left="{{ g.danger_low_end|default:0 }}%" data-right="calc(100% - {{ g.warn_start }}%)" style="border-radius: 0;"></span>
+                        <span class="range-zone zone-warn" data-left="{{ g.warn_start }}%" data-width="calc({{ g.danger_start }}% - {{ g.warn_start }}%)"></span>
+                        <span class="range-zone zone-danger zone-danger-right" data-left="{{ g.danger_start }}%"></span>
                     {% endif %}
                     {% if g.marker_pct is not None %}
                         {% if g.state == "danger" or g.state == "warn" %}
-                        <span class="range-active-fill" style="width: {{ g.marker_pct }}%;"></span>
+                        <span class="range-active-fill" data-width="{{ g.marker_pct }}%"></span>
                         {% endif %}
-                        <span class="range-marker" style="left: {{ g.marker_pct }}%;"></span>
+                        <span class="range-marker" data-left="{{ g.marker_pct }}%"></span>
                     {% endif %}
                 </span>
                 <span class="kpi-note">{{ g.range_note }}</span>

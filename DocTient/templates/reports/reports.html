@@ -62,7 +62,7 @@
                 <span class="range-zone zone-warn" style="left: 40%; width: 20%;"></span>
                 <span class="range-zone zone-danger zone-danger-right" style="left: 60%;"></span>
                 {% if avg_bp_pct is not None %}
-                <span class="range-marker" style="left: {{ avg_bp_pct }}%;"></span>
+                <span class="range-marker" data-left="{{ avg_bp_pct }}%"></span>
                 {% endif %}
             </span>
             <span class="kpi-note">{% if min_sys and max_sys %}Range {{ min_sys }}–{{ max_sys }} mmHg{% else %}Limit ≥140/90{% endif %}</span>
@@ -82,7 +82,7 @@
                 <span class="range-zone zone-warn" style="left: 60%; width: 13.3%;"></span>
                 <span class="range-zone zone-danger zone-danger-right" style="left: 73.3%;"></span>
                 {% if map_marker_pct is not None %}
-                <span class="range-marker" style="left: {{ map_marker_pct }}%;"></span>
+                <span class="range-marker" data-left="{{ map_marker_pct }}%"></span>
                 {% endif %}
             </span>
             <span class="kpi-note">Target 70–100 mmHg</span>
@@ -102,7 +102,7 @@
                 <span class="range-zone zone-warn" style="left: 50%; width: 16.7%;"></span>
                 <span class="range-zone zone-danger zone-danger-right" style="left: 66.7%;"></span>
                 {% if pp_marker_pct is not None %}
-                <span class="range-marker" style="left: {{ pp_marker_pct }}%;"></span>
+                <span class="range-marker" data-left="{{ pp_marker_pct }}%"></span>
                 {% endif %}
             </span>
             <span class="kpi-note">Optimal 30–50 mmHg</span>
@@ -117,7 +117,7 @@
             </span>
             <span class="kpi-value">{{ adherence_rate }}<span class="kpi-unit">%</span></span>
             <div class="progress-track" style="margin: 4px 0 2px;">
-                <div class="progress-fill {% if adherence_rate >= 85 %}is-complete{% endif %}" style="width: {{ adherence_rate }}%;"></div>
+                <div class="progress-fill {% if adherence_rate >= 85 %}is-complete{% endif %}" data-width="{{ adherence_rate }}%"></div>
             </div>
             <span class="kpi-note">{{ medications|length }} regimen{{ medications|length|pluralize }} · Target ≥85%</span>
         </div>
@@ -138,7 +138,7 @@
             <div class="risk-stacked-bar" role="img" aria-label="Session distribution across clinical risk zones">
                 {% for r in risk_distribution %}
                 {% if r.count > 0 %}
-                <span class="risk-seg seg-{{ r.key }}" style="width: {{ r.pct }}%;" title="{{ r.label }}: {{ r.count }} ({{ r.pct }}%)"></span>
+                <span class="risk-seg seg-{{ r.key }}" data-width="{{ r.pct }}%" title="{{ r.label }}: {{ r.count }} ({{ r.pct }}%)"></span>
                 {% endif %}
                 {% endfor %}
             </div>
@@ -198,14 +198,14 @@
                         {% elif s.key == "weight" %}
                             <span class="range-zone zone-safe" style="left: 0; right: 0;"></span>
                         {% else %}
-                            <span class="range-zone zone-danger zone-danger-left" style="width: {{ s.danger_low_end }}%;"></span>
-                            <span class="range-zone zone-safe" style="left: {{ s.danger_low_end }}%; right: calc(100% - {{ s.warn_start }}%); border-radius: 0;"></span>
-                            <span class="range-zone zone-warn" style="left: {{ s.warn_start }}%; width: calc({{ s.danger_start }}% - {{ s.warn_start }}%);"></span>
-                            <span class="range-zone zone-danger zone-danger-right" style="left: {{ s.danger_start }}%;"></span>
+                            <span class="range-zone zone-danger zone-danger-left" data-width="{{ s.danger_low_end }}%"></span>
+                            <span class="range-zone zone-safe" data-left="{{ s.danger_low_end }}%" data-right="calc(100% - {{ s.warn_start }}%)" style="border-radius: 0;"></span>
+                            <span class="range-zone zone-warn" data-left="{{ s.warn_start }}%" data-width="calc({{ s.danger_start }}% - {{ s.warn_start }}%)"></span>
+                            <span class="range-zone zone-danger zone-danger-right" data-left="{{ s.danger_start }}%"></span>
                         {% endif %}
                         {% if s.has_data %}
-                            <span class="spread-span-band is-{{ s.state }}" style="left: {{ s.min_pct }}%; width: {{ s.span_pct }}%;"></span>
-                            <span class="spread-mean-tick" style="left: {{ s.avg_pct }}%;"></span>
+                            <span class="spread-span-band is-{{ s.state }}" data-left="{{ s.min_pct }}%" data-width="{{ s.span_pct }}%"></span>
+                            <span class="spread-mean-tick" data-left="{{ s.avg_pct }}%"></span>
                         {% endif %}
                     </div>
                     <div class="spread-foot">
@@ -259,7 +259,7 @@
                     <span class="range-zone zone-warn" style="left: 50%; width: 25%;"></span>
                     <span class="range-zone zone-danger zone-danger-right" style="left: 75%;"></span>
                     {% if bmi_marker_pct is not None %}
-                    <span class="range-marker" style="left: {{ bmi_marker_pct }}%;"></span>
+                    <span class="range-marker" data-left="{{ bmi_marker_pct }}%"></span>
                     {% endif %}
                 </div>
                 <div class="bmi-scale-labels num">
@@ -385,7 +385,7 @@
             <div class="risk-stacked-bar" role="img" aria-label="Cohort risk distribution">
                 {% for r in cohort_risk_breakdown %}
                 {% if r.count > 0 %}
-                <span class="risk-seg seg-{% if r.key == 'stable' %}normal{% elif r.key == 'high' %}danger{% else %}elevated{% endif %}" style="width: {{ r.pct }}%;"></span>
+                <span class="risk-seg seg-{% if r.key == 'stable' %}normal{% elif r.key == 'high' %}danger{% else %}elevated{% endif %}" data-width="{{ r.pct }}%"></span>
                 {% endif %}
                 {% endfor %}
             </div>
@@ -465,7 +465,7 @@
                                 {% if p.bp_marker_pct is not None %}
                                 <span class="mini-range {% if p.triage_key == 'high' %}is-danger{% elif p.triage_key == 'elevated' %}is-warn{% endif %}" aria-hidden="true">
                                     <span class="mini-range-danger"></span>
-                                    <span class="mini-range-dot" style="left: {{ p.bp_marker_pct }}%;"></span>
+                                    <span class="mini-range-dot" data-left="{{ p.bp_marker_pct }}%"></span>
                                 </span>
                                 {% endif %}
                             {% else %}–{% endif %}
@@ -517,14 +517,14 @@
                         <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
                     {% else %}
                         {% if g.danger_low_end %}
-                        <span class="range-zone zone-danger zone-danger-left" style="width: {{ g.danger_low_end }}%;"></span>
+                        <span class="range-zone zone-danger zone-danger-left" data-width="{{ g.danger_low_end }}%"></span>
                         {% endif %}
-                        <span class="range-zone zone-safe" style="left: {{ g.danger_low_end|default:0 }}%; right: calc(100% - {{ g.warn_start }}%); border-radius: 0;"></span>
-                        <span class="range-zone zone-warn" style="left: {{ g.warn_start }}%; width: calc({{ g.danger_start }}% - {{ g.warn_start }}%);"></span>
-                        <span class="range-zone zone-danger zone-danger-right" style="left: {{ g.danger_start }}%;"></span>
+                        <span class="range-zone zone-safe" data-left="{{ g.danger_low_end|default:0 }}%" data-right="calc(100% - {{ g.warn_start }}%)" style="border-radius: 0;"></span>
+                        <span class="range-zone zone-warn" data-left="{{ g.warn_start }}%" data-width="calc({{ g.danger_start }}% - {{ g.warn_start }}%)"></span>
+                        <span class="range-zone zone-danger zone-danger-right" data-left="{{ g.danger_start }}%"></span>
                     {% endif %}
                     {% if g.marker_pct is not None %}
-                        <span class="range-marker" style="left: {{ g.marker_pct }}%;"></span>
+                        <span class="range-marker" data-left="{{ g.marker_pct }}%"></span>
                     {% endif %}
                 </span>
                 <span class="kpi-note">{{ g.range_note }}</span>
