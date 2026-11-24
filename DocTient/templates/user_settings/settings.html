@@ -1,57 +1,72 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Settings - DocTient{% endblock %}
+{% block title %}Settings · DocTient{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/user_settings/settings.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="settings-container">
-    <div class="dashboard-card settings-card">
-        <div class="settings-header">
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Settings &amp; Telemetry Preferences</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Manage interface display, diagnostic notification alerts, and data privacy.</p>
-        </div>
-
-        <form method="post" class="settings-form">
-            {% csrf_token %}
-
-            <div class="setting-item">
-                <div class="setting-info">
-                    <label class="setting-title" for="dark_mode">Dark Theme Display</label>
-                    <p class="setting-desc">Enable high-contrast dark telemetry theme for low-light clinical reading.</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" id="dark_mode" name="dark_mode" {% if settings.dark_mode %}checked{% endif %}>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="setting-item">
-                <div class="setting-info">
-                    <label class="setting-title" for="email_notifications">Critical Telemetry Alerts</label>
-                    <p class="setting-desc">Receive notifications when vital signs cross cardiovascular threshold limits.</p>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" id="email_notifications" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <button type="submit" class="btn-pill-action" style="margin-top: 20px; width: 100%; justify-content: center;">
-                Save Preferences
-                <span class="btn-arrow-disc">➔</span>
-            </button>
-        </form>
-
-        <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--surface-border);">
-            <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Health Data Compliance</h4>
-            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                All vitals, biometric logs, and consultation messages are stored securely with role-based clinical isolation.
-            </p>
+<div class="app-stack">
+    <div class="page-head">
+        <div class="page-title-group">
+            <h1>Settings</h1>
+            <p class="page-finding">Manage workspace appearance, clinical threshold alerts, and health data isolation.</p>
         </div>
     </div>
+
+    <form method="post" class="two-col-settings">
+        {% csrf_token %}
+
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Display and alerts</h2>
+                <p>Changes to dark display preview immediately and persist across all portal pages when saved.</p>
+            </div>
+
+            <div class="settings-panel-col">
+                <div class="switch-row">
+                    <div class="switch-info">
+                        <div class="switch-title-line">
+                            <label class="switch-title" for="dark_mode">Dark Theme Display</label>
+                            <span class="pill {% if settings.dark_mode %}pos{% endif %}">{% if settings.dark_mode %}On{% else %}Off{% endif %}</span>
+                        </div>
+                        <p class="switch-desc">Use a low-glare dark workspace for evening telemetry review.</p>
+                    </div>
+                    <input type="checkbox" class="toggle-switch" id="dark_mode" name="dark_mode" {% if settings.dark_mode %}checked{% endif %}>
+                </div>
+
+                <div class="switch-row">
+                    <div class="switch-info">
+                        <div class="switch-title-line">
+                            <label class="switch-title" for="email_notifications">Critical Telemetry Alerts</label>
+                            <span class="pill {% if settings.email_notifications %}pos{% endif %}">{% if settings.email_notifications %}On{% else %}Off{% endif %}</span>
+                        </div>
+                        <p class="switch-desc">Send notifications when blood pressure, heart rate, or SpO₂ crosses a danger threshold.</p>
+                    </div>
+                    <input type="checkbox" class="toggle-switch" id="email_notifications" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}>
+                </div>
+
+                <div style="padding-top: 4px;">
+                    <button type="submit" class="btn primary">Save preferences</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Health data compliance</h2>
+                <p>How vital signs, medication logs, and consultation records are protected.</p>
+            </div>
+
+            <div class="settings-panel-col">
+                <p class="compliance-text">
+                    All biometric readings, prescription compliance logs, and consultation threads are stored with role-based isolation. Patients can only view their own chart and connected physicians; physicians can only inspect patients linked to their roster.
+                </p>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}

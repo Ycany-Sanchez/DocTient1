@@ -1,136 +1,175 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Medical Profile - DocTient{% endblock %}
+{% block title %}Profile · DocTient{% endblock %}
+{% block breadcrumb %}Profile{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile/profile.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="profile-container">
-    <div class="dashboard-card profile-card">
-        <div class="profile-header">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Medical Profile &amp; Demographics</h2>
+<div class="app-stack">
+    <div class="page-head">
+        <div class="page-title-group">
+            <div class="page-title-line">
+                <h1>Medical Profile</h1>
                 {% if doctor %}
-                <span class="badge badge-info">Attending Physician</span>
+                <span class="pill info">Attending physician</span>
                 {% elif patient %}
-                <span class="badge badge-success">Patient Chart</span>
+                <span class="pill pos">Patient chart</span>
                 {% endif %}
             </div>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Maintain your clinical records, emergency contacts, and telehealth credentials.</p>
+            <p class="page-finding">Maintain clinical demographics, emergency contact numbers, and telehealth credentials.</p>
         </div>
+    </div>
 
-        <form method="post" enctype="multipart/form-data" class="profile-form">
-            {% csrf_token %}
-            
-            <div class="avatar-section">
-                <div class="avatar-preview">
-                    {% if profile.profile_image %}
-                        <img src="{{ profile.profile_image.url }}" alt="Profile Photo">
-                    {% else %}
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" color="var(--brand-primary)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <form method="post" enctype="multipart/form-data" class="two-col-settings">
+        {% csrf_token %}
+
+        <!-- Section 1: Identity & Avatar -->
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Identity</h2>
+                <p>Your legal name and photo appear on clinical reports and consultation threads.</p>
+                <div class="profile-summary-list">
+                    <div class="summary-kv">
+                        <span>Handle</span>
+                        <span class="mono-id">@{{ request.user.username }}</span>
+                    </div>
+                    {% if doctor %}
+                    <div class="summary-kv">
+                        <span>Active cohort</span>
+                        <span class="num">{{ connected_patient_count }} patient{{ connected_patient_count|pluralize }}</span>
+                    </div>
                     {% endif %}
                 </div>
-                <div class="avatar-upload">
-                    <label class="medix-label">Profile Avatar</label>
-                    <input type="file" id="profile_image" name="profile_image" accept="image/*" style="font-size: 0.85rem; color: var(--text-muted);">
-                    <small style="color: var(--text-subtle); display: block; margin-top: 4px;">JPG, PNG up to 5MB</small>
+            </div>
+
+            <div class="settings-panel-col">
+                <div class="avatar-row">
+                    <div class="avatar-preview">
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" alt="Profile photo">
+                        {% else %}
+                            <span>{{ nav_initials }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="field" style="flex: 1;">
+                        <label for="profile_image">Profile photo</label>
+                        <input type="file" id="profile_image" name="profile_image" accept="image/*" class="file-input">
+                        <span class="hint">JPG or PNG up to 5 MB</span>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="sys_handle">System handle</label>
+                        <input id="sys_handle" type="text" class="input" value="@{{ request.user.username }}" disabled>
+                    </div>
+                    <div class="field">
+                        <label for="id_full_name">Legal full name</label>
+                        <input id="id_full_name" type="text" name="full_name" class="input" value="{{ profile.full_name|default:request.user.username }}" placeholder="e.g. Juan Dela Cruz" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if patient %}
+        <!-- Section 2 (Patient): Contact & Demographics -->
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Demographics and emergency contact</h2>
+                <p>Used by your supervising physician when a vital reading crosses a clinical threshold.</p>
+            </div>
+
+            <div class="settings-panel-col">
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="id_contact_no">Primary mobile contact</label>
+                        <input id="id_contact_no" type="tel" name="contact_no" class="input" value="{{ patient.contact_no|default:'' }}" placeholder="+63 917 000 0000">
+                    </div>
+                    <div class="field">
+                        <label for="id_emergency">Emergency contact phone</label>
+                        <input id="id_emergency" type="tel" name="emergency_contact_no" class="input" value="{{ patient.emergency_contact_no|default:'' }}" placeholder="+63 918 000 0000">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="id_gender">Gender</label>
+                        <select id="id_gender" name="gender" class="input">
+                            <option value="">Select</option>
+                            <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
+                            <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
+                            <option value="Non-Binary" {% if patient.gender == "Non-Binary" %}selected{% endif %}>Non-Binary</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="id_address">Residential address</label>
+                        <input id="id_address" type="text" name="address" class="input" value="{{ patient.address|default:'' }}" placeholder="City, Province">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if doctor %}
+        <!-- Section 2 (Doctor): Clinical Credentials -->
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Clinical credentials</h2>
+                <p>Displayed to connected patients in their care plan and consultation inbox.</p>
+                <div class="profile-summary-list">
+                    <div class="summary-kv">
+                        <span>Availability</span>
+                        <span class="pill {% if doctor.availability_status == 'available' %}pos{% elif doctor.availability_status == 'busy' %}warn{% endif %}">{{ doctor.availability_status|default:"available"|title }}</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="medix-label">System Handle</label>
-                    <input type="text" class="medix-input" value="@{{ request.user.username }}" disabled style="background: #f1f5f9; cursor: not-allowed;">
+            <div class="settings-panel-col">
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="id_specialty">Medical specialty</label>
+                        <input id="id_specialty" type="text" name="med_specialty" class="input" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology, Internal Medicine">
+                    </div>
+                    <div class="field">
+                        <label for="id_doc_contact">Clinic contact</label>
+                        <input id="id_doc_contact" type="tel" name="contact_no" class="input" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="medix-label">Legal Full Name</label>
-                    <input type="text" name="full_name" class="medix-input" value="{{ profile.full_name|default:request.user.username }}" placeholder="e.g. Juan Dela Cruz" required>
-                </div>
-            </div>
-
-            {% if patient %}
-            <div class="form-grid-2" style="margin-top: 14px;">
-                <div class="form-group">
-                    <label class="medix-label">Primary Mobile Contact</label>
-                    <input type="tel" name="contact_no" class="medix-input" value="{{ patient.contact_no|default:'' }}" placeholder="+63 917 000 0000">
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Emergency Contact Phone</label>
-                    <input type="tel" name="emergency_contact_no" class="medix-input" value="{{ patient.emergency_contact_no|default:'' }}" placeholder="+63 918 000 0000">
-                </div>
-            </div>
-
-            <div class="form-grid-2" style="margin-top: 14px;">
-                <div class="form-group">
-                    <label class="medix-label">Gender</label>
-                    <select name="gender" class="medix-input">
-                        <option value="">-- Select --</option>
-                        <option value="Female" {% if patient.gender == "Female" %}selected{% endif %}>Female</option>
-                        <option value="Male" {% if patient.gender == "Male" %}selected{% endif %}>Male</option>
-                        <option value="Non-Binary" {% if patient.gender == "Non-Binary" %}selected{% endif %}>Non-Binary</option>
+                <div class="field">
+                    <label for="id_availability">Telehealth availability status</label>
+                    <select id="id_availability" name="availability_status" class="input">
+                        <option value="available" {% if doctor.availability_status == 'available' %}selected{% endif %}>Available for telehealth consultation</option>
+                        <option value="busy" {% if doctor.availability_status == 'busy' %}selected{% endif %}>In in-clinic consultation</option>
+                        <option value="offline" {% if doctor.availability_status == 'offline' %}selected{% endif %}>Off-duty / Away</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="medix-label">Residential Address</label>
-                    <input type="text" name="address" class="medix-input" value="{{ patient.address|default:'' }}" placeholder="City, Province">
-                </div>
             </div>
-            {% endif %}
+        </div>
+        {% endif %}
 
-            {% if doctor %}
-            <!-- Physician Credentials Summary -->
-            <div style="margin-top: 18px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <!-- Section 3: Biography & Save -->
+        <div class="settings-section">
+            <div class="settings-label-col">
+                <h2>Medical background</h2>
+                <p>Relevant conditions, allergies, or clinical background notes shared with your care workspace.</p>
+            </div>
+
+            <div class="settings-panel-col">
+                <div class="field">
+                    <label for="id_bio">Biography and clinical notes</label>
+                    <textarea id="id_bio" name="bio" class="input" rows="3" placeholder="Provide background information or clinical notes">{{ profile.bio|default:'' }}</textarea>
+                </div>
+
                 <div>
-                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #0284c7; letter-spacing: 0.05em;">Physician Credentials</span>
-                    <h3 style="font-size: 1.15rem; margin: 2px 0; color: #0f172a;">Dr. {{ doctor.full_name|default:request.user.username }}</h3>
-                    <p style="margin: 0; font-size: 0.85rem; color: #475569;">{{ doctor.med_specialty|default:"General Practice & Telehealth" }}</p>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div style="text-align: right;">
-                        <small style="color: var(--text-muted); font-size: 0.72rem; display: block;">Active Cohort</small>
-                        <strong style="color: var(--brand-dark); font-size: 1.05rem;">{{ connected_patient_count }} Patients</strong>
-                    </div>
-                    <span class="badge {% if doctor.availability_status == 'available' %}badge-success{% elif doctor.availability_status == 'busy' %}badge-warning{% else %}badge-muted{% endif %}">
-                        {{ doctor.availability_status|default:"available"|title }}
-                    </span>
+                    <button type="submit" class="btn primary">Save profile</button>
                 </div>
             </div>
-
-            <div class="form-grid-2" style="margin-top: 14px;">
-                <div class="form-group">
-                    <label class="medix-label">Medical Specialty</label>
-                    <input type="text" name="med_specialty" class="medix-input" value="{{ doctor.med_specialty|default:'' }}" placeholder="e.g. Cardiology, Internal Medicine">
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Clinic Contact</label>
-                    <input type="tel" name="contact_no" class="medix-input" value="{{ doctor.contact_no|default:'' }}" placeholder="+63 2 8000 0000">
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 14px;">
-                <label class="medix-label">Telehealth Availability Status</label>
-                <select name="availability_status" class="medix-input">
-                    <option value="available" {% if doctor.availability_status == 'available' %}selected{% endif %}>🟢 Available for Telehealth Consultation</option>
-                    <option value="busy" {% if doctor.availability_status == 'busy' %}selected{% endif %}>🟡 In In-Clinic Consultation</option>
-                    <option value="offline" {% if doctor.availability_status == 'offline' %}selected{% endif %}>⚪ Off-Duty / Away</option>
-                </select>
-            </div>
-            {% endif %}
-
-            <div class="form-group" style="margin-top: 14px;">
-                <label class="medix-label">Medical Background / Biography</label>
-                <textarea name="bio" class="medix-input" rows="3" placeholder="Provide background information or clinical notes...">{{ profile.bio|default:'' }}</textarea>
-            </div>
-
-            <button type="submit" class="btn-pill-action" style="margin-top: 20px; width: 100%; justify-content: center;">
-                Save Profile Information
-                <span class="btn-arrow-disc">➔</span>
-            </button>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}

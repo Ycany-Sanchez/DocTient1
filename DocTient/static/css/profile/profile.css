@@ -1,57 +1,103 @@
-/* DocTient — MedixWeb Profile Styling */
+/* DocTient — Two-Column Profile Layout (Framed Sheet Settings Pattern) */
 
-.profile-container {
-    max-width: 720px;
-    margin: 10px auto 40px auto;
+.two-col-settings {
+    display: flex;
+    flex-direction: column;
 }
 
-.profile-card {
-    background: #ffffff;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-lg);
-    padding: 36px 40px;
-    box-shadow: var(--shadow-card);
+.settings-section {
+    display: grid;
+    grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+    gap: 24px 36px;
+    padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    align-items: start;
+}
+.settings-section:first-child {
+    border-top: 0;
+    padding-top: 4px;
 }
 
-.profile-header {
-    border-bottom: 1px solid var(--surface-border);
-    padding-bottom: 18px;
-    margin-bottom: 24px;
+@media (max-width: 860px) {
+    .settings-section {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
 }
 
-.avatar-section {
+.settings-label-col {
+    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.settings-label-col h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+.settings-label-col p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.profile-summary-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.summary-kv {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 24px;
-    padding: 18px 20px;
-    background: #f8fafc;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--surface-border);
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.settings-panel-col {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .avatar-preview {
-    width: 76px;
-    height: 76px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    border: 2px solid var(--surface-border);
-    flex-shrink: 0;
+    font-size: 18px;
+    font-weight: 600;
+    flex: none;
 }
-
 .avatar-preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.form-group {
-    margin-bottom: 6px;
+.file-input {
+    font-size: 13px;
+    color: var(--text);
 }

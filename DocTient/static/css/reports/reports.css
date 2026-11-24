@@ -1,211 +1,93 @@
-/* DocTient — MedixWeb Reports & Analytics Styling */
+/* DocTient — Clinical Reports Specific Styles */
 
-.reports-container {
-    max-width: 1140px;
-    margin: 0 auto;
-}
-
-.reports-hero {
-    margin-bottom: 28px;
-}
-
-/* 4-Card Highlight Grid */
-.medix-reports-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-@media (max-width: 900px) {
-    .medix-reports-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 520px) {
-    .medix-reports-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.rep-card {
-    background: #ffffff;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-md);
-    padding: 24px 20px;
-    box-shadow: var(--shadow-card);
-    transition: all 0.2s var(--ease-medix);
+.report-chart-controls {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
-.rep-card:hover {
-    border-color: rgba(2, 132, 199, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px -2px rgba(2, 132, 199, 0.1);
+.metric-switch {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: var(--radius-control);
+    background: var(--raised);
+    border: 1px solid var(--border);
 }
 
-.rep-label {
-    font-size: 0.74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-}
-
-.rep-val {
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-}
-
-.rep-val small {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.rep-slash {
-    color: var(--text-subtle);
+.metric-switch button {
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
     font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--t-fast) ease, color var(--t-fast) ease;
 }
 
-.rep-sub {
-    font-size: 0.74rem;
-    color: var(--text-subtle);
-    margin-top: 6px;
+.metric-switch button:hover {
+    color: var(--text);
 }
 
-/* Trend Graph */
-.medix-trend-container {
-    background: #f8fafc;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-top: 14px;
-}
-
-.medix-trend-svg {
-    width: 100%;
-    height: 130px;
-    margin-bottom: 8px;
-}
-
-.trend-date-axis {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--surface-border);
-    overflow-x: auto;
-}
-
-.axis-point {
-    text-align: center;
-    font-size: 0.8rem;
-    min-width: 60px;
-}
-
-.axis-point strong {
-    display: block;
-    color: var(--text-primary);
-}
-
-.axis-point small {
-    color: var(--text-muted);
-    font-size: 0.7rem;
-}
-
-/* Reports Split Row */
-.reports-split-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-@media (max-width: 768px) {
-    .reports-split-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-.progress-bar-wrap {
-    width: 100%;
-    height: 12px;
-    background: #e2e8f0;
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    margin-top: 8px;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: var(--brand-primary);
-    border-radius: var(--radius-full);
-    transition: width 0.3s ease;
+.metric-switch button[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--text);
 }
 
 .regimen-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
 }
 
-.regimen-item {
+.regimen-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--rule);
+}
+.regimen-row:first-child { border-top: 0; padding-top: 0; }
+.regimen-row:last-child { padding-bottom: 0; }
+
+.bmi-readout {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.bmi-scale-block {
+    margin-bottom: 14px;
+}
+
+.bmi-scale-labels {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    background: #f8fafc;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-sm);
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
 }
 
-.bmi-medix-box {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: var(--radius-md);
-    padding: 18px;
+.clinical-note-box {
+    margin-top: auto;
+    padding: 12px 14px;
+    border-radius: var(--radius-control);
+    background: var(--raised);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
 }
 
-.bmi-large {
-    font-size: 2.4rem;
-    font-weight: 800;
-    color: var(--brand-dark);
-    line-height: 1;
-}
-
-/* Print Rules */
-@media print {
-    .no-print, .site-header, .site-footer {
-        display: none !important;
-    }
-
-    body {
-        background: #ffffff !important;
-    }
-
-    .medix-hero-banner {
-        background: #ffffff !important;
-        color: #000000 !important;
-        border: 2px solid #000000 !important;
-        box-shadow: none !important;
-    }
-
-    .hero-title, .hero-desc {
-        color: #000000 !important;
-    }
-
-    .dashboard-card, .rep-card {
-        box-shadow: none !important;
-        border: 1px solid #cccccc !important;
-    }
+.sub-heading {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
 }

@@ -1,99 +1,129 @@
-/* DocTient — MedixWeb Settings Styling */
+/* DocTient — Two-Column Settings Layout */
 
-.settings-container {
-    max-width: 680px;
-    margin: 10px auto 40px auto;
-}
-
-.settings-card {
-    background: #ffffff;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-lg);
-    padding: 36px 40px;
-    box-shadow: var(--shadow-card);
-}
-
-.settings-header {
-    border-bottom: 1px solid var(--surface-border);
-    padding-bottom: 18px;
-    margin-bottom: 24px;
-}
-
-.setting-item {
+.two-col-settings {
     display: flex;
+    flex-direction: column;
+}
+
+.settings-section {
+    display: grid;
+    grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+    gap: 24px 36px;
+    padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    align-items: start;
+}
+.settings-section:first-child {
+    border-top: 0;
+    padding-top: 4px;
+}
+
+@media (max-width: 860px) {
+    .settings-section {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+.settings-label-col {
+    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.settings-label-col h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+.settings-label-col p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.settings-panel-col {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.switch-row {
+    display: flex;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+.switch-row:last-of-type {
+    padding-bottom: 12px;
+}
+
+.switch-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.switch-title-line {
+    display: flex;
     align-items: center;
-    padding: 18px 20px;
-    border-radius: var(--radius-md);
-    background: #f8fafc;
-    margin-bottom: 14px;
-    border: 1px solid var(--surface-border);
-    transition: all 0.2s ease;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.setting-item:hover {
-    background: #ffffff;
-    border-color: var(--brand-primary);
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.06);
-}
-
-.setting-title {
-    font-weight: 700;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    display: block;
+.switch-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
     cursor: pointer;
 }
 
-.setting-desc {
-    font-size: 0.84rem;
-    color: var(--text-muted);
-    margin-top: 4px;
+.switch-desc {
+    font-size: 13px;
+    color: var(--muted);
     line-height: 1.45;
 }
 
-/* MedixWeb Clean Toggle Switch */
-.switch {
+.toggle-switch {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--control);
     position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 28px;
-    flex-shrink: 0;
-    margin-left: 20px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #cbd5e1;
-    transition: all 0.25s ease;
-    border-radius: 28px;
+    flex: none;
+    margin-top: 2px;
+    transition: background-color var(--t-ui) ease;
 }
-
-.slider:before {
-    position: absolute;
+.toggle-switch::after {
     content: "";
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background-color: #ffffff;
-    transition: transform 0.25s ease;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+    background: #ffffff;
+    transition: transform var(--t-ui) var(--ease-out);
+}
+.toggle-switch:checked {
+    background: var(--accent);
+}
+.toggle-switch:checked::after {
+    transform: translateX(16px);
 }
 
-input:checked + .slider {
-    background-color: var(--brand-primary);
-}
-
-input:checked + .slider:before {
-    transform: translateX(20px);
+.compliance-text {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
 }

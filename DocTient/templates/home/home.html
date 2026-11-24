@@ -1,564 +1,669 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard - DocTient{% endblock %}
+{% block title %}Dashboard · DocTient{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="home-container">
+<div class="app-stack">
 
-    <!-- =========================================================
-         ROLE PICKER (First-time user onboarding)
-         ========================================================= -->
     {% if needs_role %}
-    <div class="medix-hero-banner">
-        <div class="hero-content">
-            <span class="medix-badge-light">Account Onboarding</span>
-            <h1 class="hero-title">Welcome to DocTient Telehealth</h1>
-            <p class="hero-desc">Choose your healthcare profile role to personalize your medical monitoring workspace.</p>
+    <!-- =========================================================
+         FIRST-TIME ROLE ONBOARDING
+         ========================================================= -->
+    <div class="page-head">
+        <div class="page-title-group">
+            <h1>Set up your DocTient workspace</h1>
+            <p class="page-finding">Select your clinical role to personalize telemetry monitoring and physician tools.</p>
         </div>
     </div>
 
-    <div class="dashboard-card" style="max-width: 680px; margin: 28px auto;">
-        <span class="card-pill-tag">Profile Setup</span>
-        <h3 style="font-size: 1.35rem; margin-bottom: 6px;">Select Your Telehealth Role</h3>
-        <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 20px;">Patients view personal biometric telemetry; doctors oversee connected patient rosters.</p>
-        
-        <form method="post" class="role-form">
+    <div class="panel onboarding-panel">
+        <form method="post" class="app-stack">
             {% csrf_token %}
-            <div class="form-group" style="margin-bottom: 16px;">
-                <label for="full_name" class="medix-label">Legal Full Name</label>
-                <input type="text" id="full_name" name="full_name" class="medix-input" placeholder="e.g. Juan Dela Cruz" value="{{ request.user.username }}" required>
+            <div class="field">
+                <label for="full_name">Legal full name</label>
+                <input type="text" id="full_name" name="full_name" class="input" placeholder="e.g. Juan Dela Cruz" value="{{ request.user.username }}" required>
             </div>
-            
+
             <div class="role-picker-grid">
                 <label class="role-radio-box">
                     <input type="radio" name="role" value="patient" checked>
-                    <div class="role-box-body">
-                        <strong>Patient Profile</strong>
-                        <p>Track personal vitals, active prescriptions, and direct physician chat.</p>
-                    </div>
+                    <span class="role-box-body">
+                        <strong>Patient profile</strong>
+                        <span>Track personal vitals, clinical thresholds, active prescriptions, and physician messages.</span>
+                    </span>
                 </label>
                 <label class="role-radio-box">
                     <input type="radio" name="role" value="doctor">
-                    <div class="role-box-body">
-                        <strong>Licensed Physician</strong>
-                        <p>Monitor patient telemetry, record in-clinic vitals, and prescribe.</p>
-                    </div>
+                    <span class="role-box-body">
+                        <strong>Licensed physician</strong>
+                        <span>Monitor patient cohorts, record in-clinic vitals, manage prescriptions, and consult.</span>
+                    </span>
                 </label>
             </div>
 
-            <div class="form-group" id="specialtyGroup" style="display:none; margin-top: 16px;">
-                <label for="med_specialty" class="medix-label">Medical Specialty</label>
-                <input type="text" id="med_specialty" name="med_specialty" class="medix-input" placeholder="e.g. Cardiology, Internal Medicine">
+            <div class="field" id="specialtyGroup" style="display: none;">
+                <label for="med_specialty">Medical specialty</label>
+                <input type="text" id="med_specialty" name="med_specialty" class="input" placeholder="e.g. Cardiology, Internal Medicine">
             </div>
 
-            <button type="submit" class="btn-pill-action" style="margin-top: 24px;">
-                Confirm Profile Role
-                <span class="btn-arrow-disc">➔</span>
-            </button>
+            <div>
+                <button type="submit" class="btn primary">Confirm profile role</button>
+            </div>
         </form>
     </div>
 
-    <!-- =========================================================
-         PATIENT MEDIXWEB DASHBOARD VIEW
-         ========================================================= -->
     {% elif is_patient %}
-    <div class="medix-hero-banner">
-        <div class="hero-split">
-            <!-- Left Editorial Text -->
-            <div class="hero-left">
-                <div class="hero-tag-row">
-                    <span class="medix-badge-light">Patient Telehealth Portal</span>
-                    <span class="hero-pill-status {{ eval_badge }}">{{ eval_status }} Telemetry</span>
-                </div>
-                <h1 class="hero-title">{{ patient.full_name|default:"Your Trusted Partner in Modern Healthcare" }}</h1>
-                <p class="hero-desc">
-                    Comprehensive Care — Where medical precision meets real-time biometrics. Connected telemetry from home monitoring to clinical recovery.
-                </p>
-                <div class="hero-action-row">
-                    <a href="#logReadingSection" class="btn-pill-action">
-                        Log Self-Reading
-                        <span class="btn-arrow-disc">➔</span>
-                    </a>
-                    <a href="{% url 'reports:reports' %}" class="btn-hero-ghost">
-                        View Biometric Analytics
-                    </a>
-                </div>
+    <!-- =========================================================
+         PATIENT TELEMETRY WORKSPACE
+         ========================================================= -->
+    <div class="page-head">
+        <div class="page-title-group">
+            <div class="page-title-line">
+                <h1>{{ patient.full_name|default:request.user.username }}</h1>
+                <span class="pill {% if eval_badge == 'badge-danger' %}neg{% elif eval_badge == 'badge-warning' %}warn{% else %}pos{% endif %}">{{ eval_status }}</span>
             </div>
-
-            <!-- Right Floating Frosted Widgets (replicating MedixWeb 97% widget) -->
-            <div class="hero-right">
-                <div class="frosted-float-card">
-                    <div class="float-top">
-                        <span class="float-label">Telemetry Adherence</span>
-                        <span class="float-badge">Optimal</span>
-                    </div>
-                    <div class="float-metric-num">98.5%</div>
-                    <p class="float-desc">
-                        Our telemetry models confirm your cardiovascular and oxygen parameters are in a safe, healthy zone.
-                    </p>
-                    <div class="float-vitals-pills">
-                        <div class="f-pill">
-                            <small>BP</small>
-                            <strong>{% if latest.systolic %}{{ latest.systolic }}/{{ latest.diastolic }}{% else %}118/78{% endif %}</strong>
-                        </div>
-                        <div class="f-pill">
-                            <small>PULSE</small>
-                            <strong>{{ latest.heart_rate|default:"72" }} bpm</strong>
-                        </div>
-                        <div class="f-pill">
-                            <small>SpO₂</small>
-                            <strong>{{ latest.oxygen_saturation|default:"99" }}%</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5-Column Biometric Readout Cards -->
-    <div class="vitals-row-grid">
-        <div class="v-card-modern">
-            <div class="v-card-header">
-                <span class="v-type">Blood Pressure</span>
-                <span class="badge {{ eval_badge }}">{% if latest.systolic and latest.systolic >= 140 %}Alert{% else %}Optimal{% endif %}</span>
-            </div>
-            <div class="v-card-body">
-                <div class="v-num">{% if latest.systolic %}{{ latest.systolic }}<span class="v-slash">/</span>{{ latest.diastolic }}{% else %}–{% endif %}</div>
-                <span class="v-unit">mmHg (Resting)</span>
-            </div>
-        </div>
-
-        <div class="v-card-modern">
-            <div class="v-card-header">
-                <span class="v-type">Heart Rate</span>
-                <span class="badge badge-success">Sinus Rhythm</span>
-            </div>
-            <div class="v-card-body">
-                <div class="v-num">{{ latest.heart_rate|default:"–" }}</div>
-                <span class="v-unit">bpm (Resting)</span>
-            </div>
-        </div>
-
-        <div class="v-card-modern">
-            <div class="v-card-header">
-                <span class="v-type">Blood Oxygen</span>
-                <span class="badge badge-success">Adequate</span>
-            </div>
-            <div class="v-card-body">
-                <div class="v-num">{{ latest.oxygen_saturation|default:"–" }}<span class="v-pct">%</span></div>
-                <span class="v-unit">SpO₂ Oximetry</span>
-            </div>
-        </div>
-
-        <div class="v-card-modern">
-            <div class="v-card-header">
-                <span class="v-type">Temperature</span>
-                <span class="badge badge-success">Normal</span>
-            </div>
-            <div class="v-card-body">
-                <div class="v-num">{{ latest.temperature_celsius|default:"–" }}<span class="v-pct">°C</span></div>
-                <span class="v-unit">Body Temp</span>
-            </div>
-        </div>
-
-        <div class="v-card-modern">
-            <div class="v-card-header">
-                <span class="v-type">Body Weight</span>
-                <span class="badge badge-info">Stable</span>
-            </div>
-            <div class="v-card-body">
-                <div class="v-num">{{ latest.weight_kg|default:"–" }}</div>
-                <span class="v-unit">Kilograms</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Self-Reading Form (MedixWeb Floating Form) -->
-    <div id="logReadingSection" class="dashboard-card" style="margin-top: 24px;">
-        <div class="card-header-row">
-            <div>
-                <span class="card-pill-tag">Telemetry Submission</span>
-                <h3 style="font-size: 1.25rem;">Record New Biometric Reading</h3>
-            </div>
-            <span class="recorded-at-badge">Auto-Evaluated Against Medical Guidelines</span>
-        </div>
-
-        <form method="post" class="medix-form-grid">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="log_vital">
-            
-            <div class="form-grid-3">
-                <div class="form-group">
-                    <label class="medix-label">Systolic Pressure (mmHg)</label>
-                    <input type="number" name="systolic" class="medix-input" placeholder="118" min="60" max="250" required>
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Diastolic Pressure (mmHg)</label>
-                    <input type="number" name="diastolic" class="medix-input" placeholder="78" min="40" max="150" required>
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Heart Rate (bpm)</label>
-                    <input type="number" name="heart_rate" class="medix-input" placeholder="72" min="30" max="220">
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Oxygen Saturation (%)</label>
-                    <input type="number" step="0.1" name="oxygen_saturation" class="medix-input" placeholder="98.5" min="70" max="100">
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Temperature (°C)</label>
-                    <input type="number" step="0.1" name="temperature_celsius" class="medix-input" placeholder="36.6" min="34" max="43">
-                </div>
-                <div class="form-group">
-                    <label class="medix-label">Weight (kg)</label>
-                    <input type="number" step="0.1" name="weight_kg" class="medix-input" placeholder="65.0" min="20" max="300">
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 14px;">
-                <label class="medix-label">Daily Notes &amp; Physical Observations</label>
-                <input type="text" name="patient_notes" class="medix-input" placeholder="e.g. Resting morning reading, felt energetic and hydrated">
-            </div>
-
-            <button type="submit" class="btn-pill-action" style="margin-top: 18px;">
-                Save Telemetry Entry
-                <span class="btn-arrow-disc">➔</span>
-            </button>
-        </form>
-    </div>
-
-    <!-- Active Medications Tracker -->
-    <div class="dashboard-card">
-        <div class="card-header-row">
-            <div>
-                <span class="card-pill-tag">Treatment Plan</span>
-                <h3 style="font-size: 1.25rem;">Active Prescriptions &amp; Schedule</h3>
-            </div>
-            <span class="badge badge-info">{{ medications|length }} Prescribed</span>
-        </div>
-
-        <div class="medix-meds-grid">
-            {% for m in medications %}
-            <div class="medix-med-card {% if m.taken_today %}is-taken{% endif %}">
-                <div class="med-body">
-                    <div class="med-title-row">
-                        <h4>{{ m.medication }}</h4>
-                        {% if m.taken_today %}
-                        <span class="badge badge-success">✓ Taken Today</span>
-                        {% else %}
-                        <span class="badge badge-warning">Due Today</span>
-                        {% endif %}
-                    </div>
-                    <p class="med-instruction">{{ m.dosage }} · {{ m.frequency }}</p>
-                    {% if m.doctor %}
-                    <small class="med-doctor-tag">Supervising Physician: {{ m.doctor.full_name }}</small>
-                    {% endif %}
-                </div>
-                {% if not m.taken_today %}
-                <form method="post" style="margin-top: 12px;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="mark_medication_taken">
-                    <input type="hidden" name="medication_id" value="{{ m.id }}">
-                    <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">
-                        Mark as Taken
-                    </button>
-                </form>
+            <p class="page-finding">
+                {% if danger_gauges %}
+                    <span class="finding-alert">{{ danger_gauges|length }} vital{{ danger_gauges|length|pluralize }} in danger range</span>
+                    ·
+                {% elif latest %}
+                    Latest reading <strong>{% if latest.systolic %}{{ latest.systolic }}/{{ latest.diastolic }} mmHg{% else %}recorded{% endif %}</strong> on {{ latest.recorded_at|date:"M d, H:i" }} ·
+                {% else %}
+                    No biometric readings recorded yet ·
                 {% endif %}
-            </div>
-            {% empty %}
-            <p style="color: var(--text-muted); font-size: 0.9rem;">No active prescriptions on file.</p>
+                <span id="findingMedsText">
+                    {% if total_active_meds == 0 %}
+                        No active prescriptions
+                    {% elif due_today_count == 0 %}
+                        All {{ total_active_meds }} prescriptions taken today
+                    {% else %}
+                        {{ due_today_count }} of {{ total_active_meds }} prescriptions due today
+                    {% endif %}
+                </span>
+            </p>
+        </div>
+        <div class="page-actions">
+            <a href="{% url 'reports:reports' %}" class="btn">Clinical report</a>
+            <a href="#logReadingSection" class="btn primary">Log vital reading</a>
+        </div>
+    </div>
+
+    <!-- Interactive Telemetry Deck: 5-Vital Clinical Danger Range Strip + Live Multi-Vital Graph -->
+    <div class="app-stack" data-telemetry-deck data-chart-source="patientVitalsChartData" data-initial-metric="bp">
+        {{ vitals_chart_data|json_script:"patientVitalsChartData" }}
+
+        <!-- 5-Vital Divided Strip (Acts as interactive selector for the graph below) -->
+        <div class="kpi-strip vitals-strip" role="tablist" aria-label="Biometric indicators and danger thresholds">
+            {% for g in vital_gauges %}
+            <button
+                type="button"
+                role="tab"
+                class="kpi-cell state-{{ g.state }}"
+                data-vital-key="{{ g.key }}"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            >
+                <span class="kpi-top">
+                    <span class="kpi-label">{{ g.name }}</span>
+                    <span class="kpi-state is-{{ g.state }}">{{ g.state_label }}</span>
+                </span>
+                <span class="kpi-value">
+                    {{ g.value }}{% if g.value != "–" %}<span class="kpi-unit">{{ g.unit }}</span>{% endif %}
+                </span>
+                <span class="range-bar state-{{ g.state }}" role="img" aria-label="{{ g.name }} range: {{ g.state_label }}. {{ g.range_note }}">
+                    {% if g.key == "spo2" %}
+                        <span class="range-zone zone-danger zone-danger-left" style="width: 46.7%;"></span>
+                        <span class="range-zone zone-warn" style="left: 46.7%; width: 20%;"></span>
+                        <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
+                    {% else %}
+                        {% if g.danger_low_end %}
+                        <span class="range-zone zone-danger zone-danger-left" style="width: {{ g.danger_low_end }}%;"></span>
+                        {% endif %}
+                        <span class="range-zone zone-safe" style="left: {{ g.danger_low_end|default:0 }}%; right: calc(100% - {{ g.warn_start }}%); border-radius: 0;"></span>
+                        <span class="range-zone zone-warn" style="left: {{ g.warn_start }}%; width: calc({{ g.danger_start }}% - {{ g.warn_start }}%);"></span>
+                        <span class="range-zone zone-danger zone-danger-right" style="left: {{ g.danger_start }}%;"></span>
+                    {% endif %}
+                    {% if g.marker_pct is not None %}
+                        {% if g.state == "danger" or g.state == "warn" %}
+                        <span class="range-active-fill" style="width: {{ g.marker_pct }}%;"></span>
+                        {% endif %}
+                        <span class="range-marker" style="left: {{ g.marker_pct }}%;"></span>
+                    {% endif %}
+                </span>
+                <span class="kpi-note">{{ g.range_note }}</span>
+            </button>
             {% endfor %}
         </div>
-    </div>
 
-    <!-- Doctor's Care Plan Guidance -->
-    {% if doctor_conns %}
-    <div class="dashboard-card">
-        <span class="card-pill-tag">Clinical Guidance</span>
-        <h3 style="font-size: 1.25rem; margin-bottom: 14px;">Attending Physician Observations</h3>
-        {% for conn in doctor_conns %}
-        <div class="physician-guidance-item">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <strong style="color: var(--text-primary); font-size: 1rem;">{{ conn.doctor.full_name }}</strong>
-                <span class="badge badge-info">{{ conn.doctor.med_specialty|default:"Telehealth Specialist" }}</span>
-            </div>
-            {% if conn.observations %}
-            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 8px;">
-                <strong>Clinical Assessment:</strong> {{ conn.observations }}
-            </p>
-            {% endif %}
-            {% if conn.recommendations %}
-            <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.9rem; color: #0369a1;">
-                <strong>Care Instructions:</strong> {{ conn.recommendations }}
-            </div>
-            {% endif %}
+        <!-- Primary Row: Longitudinal Telemetry Graph (8 cols) + Active Prescriptions Live Tracker (4 cols) -->
+        <div class="app-grid">
+            <section class="panel span-8" aria-label="Biometric trend graph">
+                <div class="panel-head">
+                    <div>
+                        <h2 data-chart-title>Blood pressure trajectory</h2>
+                        <p class="panel-sub" data-chart-sub>Safe &lt;120/80 · Elevated 120–129 · Danger ≥140/90 mmHg</p>
+                    </div>
+                    <div class="chart-head-right">
+                        <div class="chart-legend-slot" data-chart-legend></div>
+                        <span class="panel-meta num">{{ vitals|length }} reading{{ vitals|length|pluralize }}</span>
+                    </div>
+                </div>
+                <div class="chart-box chart" data-chart-target>
+                    {% if not vitals %}
+                    <div class="empty">Log your first biometric reading below to plot longitudinal trends and danger thresholds.</div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="panel span-4" aria-label="Active prescriptions">
+                <div class="panel-head">
+                    <div>
+                        <h2>Today's prescriptions</h2>
+                        <p class="panel-sub" id="medTakenCount">{{ taken_today_count }} of {{ total_active_meds }} taken</p>
+                    </div>
+                    <span class="panel-meta num" id="medAdherencePct">{{ today_adherence_pct }}%</span>
+                </div>
+
+                {% if medications %}
+                <div class="adherence-bar-row">
+                    <div class="progress-track">
+                        <div
+                            class="progress-fill {% if today_adherence_pct == 100 %}is-complete{% endif %}"
+                            id="medAdherenceFill"
+                            role="progressbar"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="{{ today_adherence_pct }}"
+                            style="width: {{ today_adherence_pct }}%;"
+                        ></div>
+                    </div>
+                </div>
+
+                <ul class="med-list">
+                    {% for m in medications %}
+                    <li class="med-row {% if m.taken_today %}is-taken{% endif %}" data-med-row>
+                        <div class="med-info">
+                            <span class="med-name">{{ m.medication }}</span>
+                            <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %}</span>
+                            {% if m.doctor %}
+                            <span class="med-doc">{{ m.doctor.full_name }}</span>
+                            {% endif %}
+                        </div>
+                        <form method="post" class="js-med-toggle-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_medication_taken">
+                            <input type="hidden" name="medication_id" value="{{ m.id }}">
+                            <button
+                                type="submit"
+                                class="btn btn-sm {% if m.taken_today %}js-med-btn is-taken{% else %}primary js-med-btn{% endif %}"
+                                aria-pressed="{% if m.taken_today %}true{% else %}false{% endif %}"
+                                title="{% if m.taken_today %}Click to undo{% else %}Mark dose as taken today{% endif %}"
+                            >
+                                {% if m.taken_today %}
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5"/></svg>
+                                Taken
+                                {% else %}
+                                Mark taken
+                                {% endif %}
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty">No active prescriptions on file.</div>
+                {% endif %}
+            </section>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
 
-    <!-- Historical Telemetry Table -->
-    <div class="dashboard-card">
-        <span class="card-pill-tag">Longitudinal Log</span>
-        <h3 style="font-size: 1.25rem; margin-bottom: 14px;">Biometric History ({{ vitals|length }})</h3>
+    <!-- Secondary Row: Record New Biometric Reading (7 cols) + Attending Physician Care Plan (5 cols) -->
+    <div class="app-grid">
+        <section id="logReadingSection" class="panel {% if doctor_conns %}span-7{% else %}span-12{% endif %}">
+            <div class="panel-head">
+                <div>
+                    <h2>Record biometric reading</h2>
+                    <p class="panel-sub">New entries update your threshold bars and trend graphs immediately.</p>
+                </div>
+                <span class="pill" id="vitalRiskPreview">Auto-evaluated on entry</span>
+            </div>
+
+            <form method="post" class="app-stack" data-vital-form>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="log_vital">
+
+                <div class="form-grid-3">
+                    <div class="field">
+                        <label for="in_systolic">Systolic (mmHg)</label>
+                        <input id="in_systolic" type="number" name="systolic" class="input" placeholder="118" min="60" max="250" required>
+                    </div>
+                    <div class="field">
+                        <label for="in_diastolic">Diastolic (mmHg)</label>
+                        <input id="in_diastolic" type="number" name="diastolic" class="input" placeholder="78" min="40" max="150" required>
+                    </div>
+                    <div class="field">
+                        <label for="in_hr">Heart rate (bpm)</label>
+                        <input id="in_hr" type="number" name="heart_rate" class="input" placeholder="72" min="30" max="220">
+                    </div>
+                    <div class="field">
+                        <label for="in_spo2">Oxygen SpO₂ (%)</label>
+                        <input id="in_spo2" type="number" step="0.1" name="oxygen_saturation" class="input" placeholder="98.5" min="70" max="100">
+                    </div>
+                    <div class="field">
+                        <label for="in_temp">Temperature (°C)</label>
+                        <input id="in_temp" type="number" step="0.1" name="temperature_celsius" class="input" placeholder="36.6" min="34" max="43">
+                    </div>
+                    <div class="field">
+                        <label for="in_weight">Weight (kg)</label>
+                        <input id="in_weight" type="number" step="0.1" name="weight_kg" class="input" placeholder="65.0" min="20" max="300">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="in_notes">Observations and context</label>
+                    <input id="in_notes" type="text" name="patient_notes" class="input" placeholder="Resting morning reading, symptoms, or medication timing">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">Save reading</button>
+                </div>
+            </form>
+        </section>
+
+        {% if doctor_conns %}
+        <section class="panel span-5">
+            <div class="panel-head">
+                <div>
+                    <h2>Attending physician guidance</h2>
+                    <p class="panel-sub">{{ doctor_conns|length }} connected care provider{{ doctor_conns|length|pluralize }}</p>
+                </div>
+                <a href="{% url 'messages:messages' %}" class="btn btn-sm">Message care team</a>
+            </div>
+
+            <div class="guidance-list">
+                {% for conn in doctor_conns %}
+                <div class="guidance-item">
+                    <div class="guidance-head">
+                        <span class="cell-primary">{{ conn.doctor.full_name }}</span>
+                        <span class="pill">{{ conn.doctor.med_specialty|default:"Telehealth Specialist" }}</span>
+                    </div>
+                    {% if conn.observations %}
+                    <p class="guidance-text"><strong>Assessment:</strong> {{ conn.observations }}</p>
+                    {% endif %}
+                    {% if conn.recommendations %}
+                    <p class="guidance-note"><strong>Instructions:</strong> {{ conn.recommendations }}</p>
+                    {% else %}
+                    <p class="guidance-empty">No care instructions posted yet.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <!-- Biometric History Table -->
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>Biometric history</h2>
+                <p class="panel-sub">Chronological log of recorded vital signs</p>
+            </div>
+            <span class="panel-meta num">{{ vitals|length }} session{{ vitals|length|pluralize }}</span>
+        </div>
+
         {% if vitals %}
         <div class="table-wrap">
-            <table class="vitals-table">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Recorded Date</th>
-                        <th>Blood Pressure</th>
-                        <th>Heart Rate</th>
-                        <th>Oxygen SpO₂</th>
-                        <th>Temperature</th>
-                        <th>Weight</th>
+                        <th>Recorded</th>
+                        <th class="n">Blood pressure</th>
+                        <th class="n">Heart rate</th>
+                        <th class="n">SpO₂</th>
+                        <th class="n">Temp</th>
+                        <th class="n">Weight</th>
                         <th>Classification</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for v in vitals %}
-                    <tr>
-                        <td style="white-space: nowrap; font-weight: 600;">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
-                        <td><strong>{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} mmHg{% else %}–{% endif %}</strong></td>
-                        <td>{{ v.heart_rate|default:"–" }} bpm</td>
-                        <td>{{ v.oxygen_saturation|default:"–" }}%</td>
-                        <td>{{ v.temperature_celsius|default:"–" }}°C</td>
-                        <td>{{ v.weight_kg|default:"–" }} kg</td>
-                        <td><span class="badge {% if 'Stage' in v.monitoring_status or 'Low' in v.monitoring_status %}badge-danger{% elif 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ v.patient_notes|default:"–"|truncatechars:40 }}</td>
+                    <tr class="{% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}is-alert{% endif %}">
+                        <td class="num" style="white-space: nowrap;">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
+                        <td class="n cell-primary">{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} <span class="cell-muted">mmHg</span>{% else %}–{% endif %}</td>
+                        <td class="n">{% if v.heart_rate %}{{ v.heart_rate }} <span class="cell-muted">bpm</span>{% else %}–{% endif %}</td>
+                        <td class="n">{% if v.oxygen_saturation %}{{ v.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td class="n">{% if v.temperature_celsius %}{{ v.temperature_celsius }}°C{% else %}–{% endif %}</td>
+                        <td class="n">{% if v.weight_kg %}{{ v.weight_kg }} <span class="cell-muted">kg</span>{% else %}–{% endif %}</td>
+                        <td>
+                            <span class="pill {% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}neg{% elif v.monitoring_status and 'Stage 1' in v.monitoring_status or v.monitoring_status and 'Elevated' in v.monitoring_status %}warn{% else %}pos{% endif %}">
+                                {{ v.monitoring_status|default:"Normal" }}
+                            </span>
+                        </td>
+                        <td class="cell-muted truncate">{{ v.patient_notes|default:"–" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% else %}
-        <p style="color: var(--text-muted);">No records found.</p>
+        <div class="empty">No biometric history recorded yet.</div>
         {% endif %}
-    </div>
+    </section>
 
-    <!-- =========================================================
-         DOCTOR PHYSICIAN MEDIXWEB PORTAL
-         ========================================================= -->
     {% elif is_doctor %}
-    <div class="medix-hero-banner">
-        <div class="hero-split">
-            <div class="hero-left">
-                <span class="medix-badge-light">Physician Clinical Portal</span>
-                <h1 class="hero-title">Patient Telemetry Directory</h1>
-                <p class="hero-desc">
-                    Dr. {{ doctor.full_name }} · {{ doctor.med_specialty|default:"Cardiology & Telehealth Practice" }}. Review real-time patient biometric telemetry, record clinical assessments, and manage active prescriptions.
-                </p>
-            </div>
-            <div class="hero-right">
-                <div class="frosted-float-card">
-                    <span class="float-label">Connected Cohort</span>
-                    <div class="float-metric-num">{{ my_patients|length }}</div>
-                    <p class="float-desc">Active remote patients under continuous cardiovascular and telemetry monitoring.</p>
-                </div>
-            </div>
+    <!-- =========================================================
+         PHYSICIAN TELEMETRY PORTAL
+         ========================================================= -->
+    <div class="page-head">
+        <div class="page-title-group">
+            <h1>Patient telemetry directory</h1>
+            <p class="page-finding">
+                Dr. {{ doctor.full_name }} · {{ doctor.med_specialty|default:"Clinical Practice" }} ·
+                {% if triage_alert_count > 0 %}
+                <span class="finding-alert">{{ triage_alert_count }} patient{{ triage_alert_count|pluralize }} in danger threshold</span>
+                {% else %}
+                No critical threshold breaches across {{ my_patients|length }} connected patient{{ my_patients|length|pluralize }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="page-actions">
+            <a href="{% url 'reports:reports' %}" class="btn">Cohort report</a>
+            <a href="{% url 'messages:messages' %}" class="btn primary">Consultations</a>
         </div>
     </div>
 
-    <!-- Patient Directory & Search Card -->
-    <div class="dashboard-card">
-        <span class="card-pill-tag">Directory Roster</span>
-        <h3 style="font-size: 1.25rem; margin-bottom: 16px;">Active Patient Cohort</h3>
-        
-        <div class="medix-search-row">
-            <form method="get" class="search-form-inline">
-                <input type="text" name="q" class="medix-input" placeholder="Search patients by name or @username..." value="{{ query }}">
-                <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+    <div class="kpi-strip">
+        <div class="kpi-cell">
+            <span class="kpi-label">Connected cohort</span>
+            <span class="kpi-value">{{ my_patients|length }}</span>
+            <span class="kpi-note">Active monitored patients</span>
+        </div>
+        <div class="kpi-cell {% if triage_alert_count > 0 %}state-danger{% endif %}">
+            <span class="kpi-label">Danger alerts</span>
+            <span class="kpi-value">{{ triage_alert_count }}</span>
+            <span class="kpi-note">BP ≥140/90 or SpO₂ &lt;92%</span>
+        </div>
+        <div class="kpi-cell">
+            <span class="kpi-label">Directory matches</span>
+            <span class="kpi-value">{{ patients|length }}</span>
+            <span class="kpi-note">Patients in current view</span>
+        </div>
+    </div>
+
+    <!-- Directory Roster -->
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>Active patient cohort</h2>
+                <p class="panel-sub">Select a patient to inspect trends, record vitals, or manage prescriptions</p>
+            </div>
+        </div>
+
+        <div class="roster-toolbar">
+            <form method="get" class="toolbar-form">
+                <input type="text" name="q" class="input" placeholder="Search patients by name or @username" value="{{ query }}">
+                <button type="submit" class="btn">Search</button>
             </form>
-            <form method="post" class="add-patient-inline">
+            <form method="post" class="toolbar-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add_patient">
-                <input type="text" name="username" class="medix-input" placeholder="Connect patient @username..." required>
-                <button type="submit" class="btn-pill-action" style="padding: 6px 8px 6px 18px; font-size: 0.82rem;">
-                    + Connect
-                    <span class="btn-arrow-disc" style="width: 24px; height: 24px; font-size: 0.72rem;">➔</span>
-                </button>
+                <input type="text" name="username" class="input" placeholder="Connect patient @username" required>
+                <button type="submit" class="btn primary">Connect patient</button>
             </form>
         </div>
 
         {% if patients %}
-        <div class="table-wrap" style="margin-top: 18px;">
-            <table class="vitals-table">
+        <div class="table-wrap" style="margin-top: 16px;">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Patient Name</th>
-                        <th>Latest Blood Pressure</th>
-                        <th>Heart Rate</th>
-                        <th>SpO₂ Level</th>
-                        <th>Telemetry Status</th>
-                        <th>Last Reading</th>
-                        <th>Action</th>
+                        <th>Patient</th>
+                        <th class="n">Blood pressure</th>
+                        <th class="n">Heart rate</th>
+                        <th class="n">SpO₂</th>
+                        <th>Status</th>
+                        <th class="n">Last reading</th>
+                        <th class="n">Chart</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in patients %}
-                    <tr class="{% if selected_patient and selected_patient.id == p.id %}selected-medix-row{% endif %}">
+                    <tr class="{% if selected_patient and selected_patient.id == p.id %}is-selected{% endif %}">
                         <td>
-                            <strong>{{ p.full_name }}</strong>
-                            <small style="display: block; color: var(--text-muted); font-size: 0.78rem;">@{{ p.user.username }}</small>
-                            {% if p.is_connected %}<span class="badge badge-info" style="font-size:0.65rem; margin-top:2px;">My Patient</span>{% endif %}
+                            <span class="cell-primary">{{ p.full_name }}</span>
+                            <span class="cell-sub mono-id">@{{ p.user.username }}{% if p.is_connected %} · Connected{% endif %}</span>
                         </td>
-                        <td>{% if p.latest_vital and p.latest_vital.systolic %}<strong>{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }} mmHg</strong>{% else %}–{% endif %}</td>
-                        <td>{% if p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
-                        <td>{% if p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
-                        <td><span class="badge {{ p.eval_badge }}">{{ p.eval_status }}</span></td>
-                        <td style="white-space: nowrap;">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
+                        <td class="n">
+                            {% if p.latest_vital and p.latest_vital.systolic %}
+                                <span class="cell-primary">{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }}</span>
+                                {% if p.bp_marker_pct is not None %}
+                                <span class="mini-range {% if p.eval_badge == 'badge-danger' %}is-danger{% elif p.eval_badge == 'badge-warning' %}is-warn{% endif %}" aria-hidden="true">
+                                    <span class="mini-range-danger"></span>
+                                    <span class="mini-range-dot" style="left: {{ p.bp_marker_pct }}%;"></span>
+                                </span>
+                                {% endif %}
+                            {% else %}–{% endif %}
+                        </td>
+                        <td class="n">{% if p.latest_vital and p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td class="n">{% if p.latest_vital and p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
                         <td>
-                            <a href="?patient_id={{ p.id }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm btn-secondary">
-                                Open Chart
-                            </a>
+                            <span class="pill {% if p.eval_badge == 'badge-danger' %}neg{% elif p.eval_badge == 'badge-warning' %}warn{% elif p.eval_badge == 'badge-success' %}pos{% endif %}">
+                                {{ p.eval_status }}
+                            </span>
+                        </td>
+                        <td class="n num cell-muted">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
+                        <td class="n">
+                            <a href="?patient_id={{ p.id }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm">Open chart</a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="empty" style="margin-top: 16px;">No patients matched your search.</div>
         {% endif %}
-    </div>
+    </section>
 
     <!-- Selected Patient Clinical Inspector -->
     {% if selected_patient %}
-    <div class="dashboard-card" style="border: 2px solid var(--brand-primary);">
-        <div class="card-header-row">
+    <section class="panel inspector-panel" data-telemetry-deck data-chart-source="doctorSelectedChartData" data-initial-metric="bp">
+        {{ selected_chart_data|json_script:"doctorSelectedChartData" }}
+
+        <div class="panel-head">
             <div>
-                <span class="card-pill-tag">Clinical Inspector</span>
-                <h3 style="font-size: 1.35rem;">Patient Chart: {{ selected_patient.full_name }}</h3>
-                <small style="color: var(--text-muted);">Username: @{{ selected_patient.user.username }}</small>
+                <h2>Patient chart · {{ selected_patient.full_name }}</h2>
+                <p class="panel-sub mono-id">@{{ selected_patient.user.username }}</p>
             </div>
-            <a href="{% url 'messages:messages' %}?with={{ selected_patient.user.username }}" class="btn-pill-action" style="padding: 6px 8px 6px 18px; font-size: 0.82rem;">
-                Open Consultation Chat
-                <span class="btn-arrow-disc" style="width: 24px; height: 24px; font-size: 0.72rem;">➔</span>
-            </a>
+            <a href="{% url 'messages:messages' %}?with={{ selected_patient.user.username }}" class="btn primary btn-sm">Open consultation chat</a>
         </div>
 
-        <div class="medix-chart-grid">
-            <!-- Record Diagnostic Vitals -->
-            <div class="chart-action-box">
-                <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-primary);">Record Clinical Vitals</h4>
-                <form method="post">
+        <!-- Selected Patient 5-Vital Danger Strip -->
+        <div class="kpi-strip vitals-strip" role="tablist" aria-label="Selected patient vitals">
+            {% for g in selected_gauges %}
+            <button
+                type="button"
+                role="tab"
+                class="kpi-cell state-{{ g.state }}"
+                data-vital-key="{{ g.key }}"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            >
+                <span class="kpi-top">
+                    <span class="kpi-label">{{ g.name }}</span>
+                    <span class="kpi-state is-{{ g.state }}">{{ g.state_label }}</span>
+                </span>
+                <span class="kpi-value">{{ g.value }}{% if g.value != "–" %}<span class="kpi-unit">{{ g.unit }}</span>{% endif %}</span>
+                <span class="range-bar state-{{ g.state }}" role="img" aria-label="{{ g.name }} range: {{ g.state_label }}">
+                    {% if g.key == "spo2" %}
+                        <span class="range-zone zone-danger zone-danger-left" style="width: 46.7%;"></span>
+                        <span class="range-zone zone-warn" style="left: 46.7%; width: 20%;"></span>
+                        <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
+                    {% else %}
+                        {% if g.danger_low_end %}
+                        <span class="range-zone zone-danger zone-danger-left" style="width: {{ g.danger_low_end }}%;"></span>
+                        {% endif %}
+                        <span class="range-zone zone-safe" style="left: {{ g.danger_low_end|default:0 }}%; right: calc(100% - {{ g.warn_start }}%); border-radius: 0;"></span>
+                        <span class="range-zone zone-warn" style="left: {{ g.warn_start }}%; width: calc({{ g.danger_start }}% - {{ g.warn_start }}%);"></span>
+                        <span class="range-zone zone-danger zone-danger-right" style="left: {{ g.danger_start }}%;"></span>
+                    {% endif %}
+                    {% if g.marker_pct is not None %}
+                        {% if g.state == "danger" or g.state == "warn" %}
+                        <span class="range-active-fill" style="width: {{ g.marker_pct }}%;"></span>
+                        {% endif %}
+                        <span class="range-marker" style="left: {{ g.marker_pct }}%;"></span>
+                    {% endif %}
+                </span>
+                <span class="kpi-note">{{ g.range_note }}</span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <div class="chart-wrap-inline">
+            <div class="panel-head" style="margin-bottom: 8px;">
+                <div>
+                    <h3 class="sub-heading" data-chart-title>Blood pressure trajectory</h3>
+                    <p class="panel-sub" data-chart-sub>Safe &lt;120/80 · Danger ≥140/90 mmHg</p>
+                </div>
+                <div class="chart-legend-slot" data-chart-legend></div>
+            </div>
+            <div class="chart-box chart" data-chart-target></div>
+        </div>
+
+        <div class="app-grid" style="margin-top: 20px;">
+            <div class="panel subtle span-6">
+                <h3 class="sub-heading" style="margin-bottom: 12px;">Record clinical vitals</h3>
+                <form method="post" class="app-stack">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="record_patient_vitals">
                     <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
                     <div class="form-grid-2">
-                        <div class="form-group">
-                            <label class="medix-label">Systolic (mmHg)</label>
-                            <input type="number" name="systolic" class="medix-input" placeholder="120" required>
+                        <div class="field">
+                            <label>Systolic (mmHg)</label>
+                            <input type="number" name="systolic" class="input" placeholder="120" required>
                         </div>
-                        <div class="form-group">
-                            <label class="medix-label">Diastolic (mmHg)</label>
-                            <input type="number" name="diastolic" class="medix-input" placeholder="80" required>
+                        <div class="field">
+                            <label>Diastolic (mmHg)</label>
+                            <input type="number" name="diastolic" class="input" placeholder="80" required>
                         </div>
-                        <div class="form-group">
-                            <label class="medix-label">Heart Rate (bpm)</label>
-                            <input type="number" name="heart_rate" class="medix-input" placeholder="72">
+                        <div class="field">
+                            <label>Heart rate (bpm)</label>
+                            <input type="number" name="heart_rate" class="input" placeholder="72">
                         </div>
-                        <div class="form-group">
-                            <label class="medix-label">SpO₂ (%)</label>
-                            <input type="number" step="0.1" name="oxygen_saturation" class="medix-input" placeholder="98.5">
+                        <div class="field">
+                            <label>SpO₂ (%)</label>
+                            <input type="number" step="0.1" name="oxygen_saturation" class="input" placeholder="98.5">
                         </div>
                     </div>
-                    <div class="form-group" style="margin-top: 10px;">
-                        <label class="medix-label">Clinical Notes</label>
-                        <input type="text" name="patient_notes" class="medix-input" placeholder="Diagnostic in-clinic observation">
+                    <div class="field">
+                        <label>Clinical notes</label>
+                        <input type="text" name="patient_notes" class="input" placeholder="In-clinic observation">
                     </div>
-                    <button type="submit" class="btn btn-sm" style="margin-top: 12px;">Submit Reading</button>
+                    <div>
+                        <button type="submit" class="btn primary btn-sm">Submit reading</button>
+                    </div>
                 </form>
             </div>
 
-            <!-- Prescribe Medication -->
-            <div class="chart-action-box">
-                <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-primary);">Prescribe Medication</h4>
-                <form method="post">
+            <div class="panel subtle span-6">
+                <h3 class="sub-heading" style="margin-bottom: 12px;">Prescribe medication</h3>
+                <form method="post" class="app-stack">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="prescribe_medication">
                     <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
-                    <div class="form-group">
-                        <label class="medix-label">Medication Name &amp; Strength</label>
-                        <input type="text" name="medication" class="medix-input" placeholder="e.g. Amlodipine 5mg" required>
+                    <div class="field">
+                        <label>Medication name and strength</label>
+                        <input type="text" name="medication" class="input" placeholder="e.g. Amlodipine 5mg" required>
                     </div>
-                    <div class="form-grid-2" style="margin-top: 10px;">
-                        <div class="form-group">
-                            <label class="medix-label">Dosage</label>
-                            <input type="text" name="dosage" class="medix-input" placeholder="1 Tablet">
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Dosage</label>
+                            <input type="text" name="dosage" class="input" placeholder="1 Tablet">
                         </div>
-                        <div class="form-group">
-                            <label class="medix-label">Frequency</label>
-                            <input type="text" name="frequency" class="medix-input" placeholder="Once daily at night">
+                        <div class="field">
+                            <label>Frequency</label>
+                            <input type="text" name="frequency" class="input" placeholder="Once daily">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-success" style="margin-top: 12px;">Issue Prescription</button>
+                    <div>
+                        <button type="submit" class="btn primary btn-sm">Issue prescription</button>
+                    </div>
                 </form>
             </div>
         </div>
 
-        <!-- Active Prescriptions Management -->
-        <div class="chart-action-box" style="margin-top: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h4 style="font-size: 1rem; margin: 0; color: var(--text-primary);">Prescribed Regimens ({{ selected_medications|length }})</h4>
-                <span class="badge badge-info">Treatment Plan</span>
+        <!-- Prescribed Regimens (Zero-refresh Discontinue/Reactivate) -->
+        <div class="panel subtle" style="margin-top: 20px;">
+            <div class="panel-head">
+                <h3 class="sub-heading">Prescribed regimens</h3>
+                <span class="panel-meta num">{{ selected_medications|length }} total</span>
             </div>
             {% if selected_medications %}
-            <div class="medix-meds-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+            <ul class="med-list">
                 {% for m in selected_medications %}
-                <div class="medix-med-card" style="padding: 14px; background: #ffffff; border: 1px solid var(--surface-border); border-radius: var(--radius-sm);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-                        <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ m.medication }}</strong>
-                        <span class="badge {% if m.status == 'active' %}badge-success{% else %}badge-muted{% endif %}">{{ m.status|title }}</span>
+                <li class="med-row" data-doc-med-row>
+                    <div class="med-info">
+                        <div class="med-name-line">
+                            <span class="med-name">{{ m.medication }}</span>
+                            <span class="pill {% if m.status == 'active' %}pos{% endif %}" data-doc-med-pill>{{ m.status|title }}</span>
+                        </div>
+                        <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %} · Prescribed {{ m.created_at|date:"M d, Y" }}</span>
                     </div>
-                    <p style="margin: 0 0 6px; font-size: 0.85rem; color: var(--text-secondary);">{{ m.dosage }} · {{ m.frequency }}</p>
-                    <small style="color: var(--text-muted); font-size: 0.76rem; display: block; margin-bottom: 10px;">Prescribed: {{ m.created_at|date:"M d, Y" }}</small>
-                    <form method="post" style="display: inline;">
+                    <form method="post" class="js-doc-med-toggle-form">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="toggle_med_status">
                         <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
                         <input type="hidden" name="medication_id" value="{{ m.id }}">
-                        <button type="submit" class="btn btn-sm {% if m.status == 'active' %}btn-secondary{% else %}btn-success{% endif %}" style="font-size: 0.78rem; padding: 4px 10px;">
+                        <button type="submit" class="btn btn-sm {% if m.status != 'active' %}primary{% endif %}">
                             {% if m.status == 'active' %}Discontinue{% else %}Reactivate{% endif %}
                         </button>
                     </form>
-                </div>
+                </li>
                 {% endfor %}
-            </div>
+            </ul>
             {% else %}
-            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">No active prescriptions on file for this patient.</p>
+            <p class="panel-sub">No prescriptions on file for this patient.</p>
             {% endif %}
         </div>
 
         <!-- Care Plan Editor -->
-        <div class="chart-action-box" style="margin-top: 18px;">
-            <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-primary);">Physician Care Plan &amp; Guidance</h4>
-            <form method="post">
+        <div class="panel subtle" style="margin-top: 20px;">
+            <h3 class="sub-heading" style="margin-bottom: 12px;">Physician care plan</h3>
+            <form method="post" class="app-stack">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_clinical_note">
                 <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
-                <div class="form-group">
-                    <label class="medix-label">Clinical Assessment</label>
-                    <textarea name="observations" class="medix-input" rows="2" placeholder="Record diagnostic summary...">{{ selected_connection.observations|default:'' }}</textarea>
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label>Clinical assessment</label>
+                        <textarea name="observations" class="input" rows="2" placeholder="Record diagnostic summary">{{ selected_connection.observations|default:'' }}</textarea>
+                    </div>
+                    <div class="field">
+                        <label>Care instructions for patient</label>
+                        <textarea name="recommendations" class="input" rows="2" placeholder="Lifestyle, diet, or follow-up guidance">{{ selected_connection.recommendations|default:'' }}</textarea>
+                    </div>
                 </div>
-                <div class="form-group" style="margin-top: 10px;">
-                    <label class="medix-label">Care Instructions for Patient</label>
-                    <textarea name="recommendations" class="medix-input" rows="2" placeholder="Guidance for lifestyle, diet, or follow-up...">{{ selected_connection.recommendations|default:'' }}</textarea>
+                <div>
+                    <button type="submit" class="btn primary btn-sm">Update care plan</button>
                 </div>
-                <button type="submit" class="btn btn-sm" style="margin-top: 12px;">Update Care Plan</button>
             </form>
 
             {% if recent_notes %}
-            <div style="margin-top: 16px; border-top: 1px solid var(--surface-border); padding-top: 12px;">
-                <h5 style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px;">Recent Clinical Observations History</h5>
+            <div class="notes-archive">
+                <span class="panel-meta">Recent observations</span>
                 {% for n in recent_notes %}
-                <div style="background: #f8fafc; border-radius: 4px; padding: 8px 12px; margin-bottom: 6px; font-size: 0.84rem;">
-                    <strong style="color: var(--text-primary);">{{ n.observations|truncatechars:120 }}</strong>
+                <div class="note-item">
+                    <span class="cell-primary">{{ n.observations|truncatechars:120 }}</span>
                     {% if n.recommendations %}
-                    <p style="margin: 2px 0 0; color: var(--text-secondary); font-size: 0.8rem;">Guidance: {{ n.recommendations|truncatechars:100 }}</p>
+                    <span class="cell-sub">Guidance: {{ n.recommendations|truncatechars:100 }}</span>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -566,43 +671,47 @@
             {% endif %}
         </div>
 
-        <!-- Patient Telemetry Log Table -->
-        <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">Telemetry Records ({{ selected_vitals|length }})</h4>
-        <div class="table-wrap">
-            <table class="vitals-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>BP</th>
-                        <th>HR</th>
-                        <th>SpO₂</th>
-                        <th>Temp</th>
-                        <th>Weight</th>
-                        <th>Classification</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for v in selected_vitals %}
-                    <tr>
-                        <td style="white-space: nowrap;">{{ v.recorded_at|date:"M d, H:i" }}</td>
-                        <td><strong>{{ v.systolic }}/{{ v.diastolic }} mmHg</strong></td>
-                        <td>{{ v.heart_rate }} bpm</td>
-                        <td>{{ v.oxygen_saturation }}%</td>
-                        <td>{{ v.temperature_celsius }}°C</td>
-                        <td>{{ v.weight_kg }} kg</td>
-                        <td><span class="badge {% if 'Stage' in v.monitoring_status %}badge-danger{% else %}badge-success{% endif %}">{{ v.monitoring_status }}</span></td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" style="color: var(--text-muted);">No records found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Selected Patient Vitals Table -->
+        <div style="margin-top: 20px;">
+            <div class="panel-head">
+                <h3 class="sub-heading">Telemetry records</h3>
+                <span class="panel-meta num">{{ selected_vitals|length }} session{{ selected_vitals|length|pluralize }}</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="n">BP</th>
+                            <th class="n">HR</th>
+                            <th class="n">SpO₂</th>
+                            <th class="n">Temp</th>
+                            <th class="n">Weight</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in selected_vitals %}
+                        <tr>
+                            <td class="num">{{ v.recorded_at|date:"M d, H:i" }}</td>
+                            <td class="n cell-primary">{{ v.systolic }}/{{ v.diastolic }} mmHg</td>
+                            <td class="n">{{ v.heart_rate|default:"–" }} bpm</td>
+                            <td class="n">{{ v.oxygen_saturation|default:"–" }}%</td>
+                            <td class="n">{{ v.temperature_celsius|default:"–" }}°C</td>
+                            <td class="n">{{ v.weight_kg|default:"–" }} kg</td>
+                            <td><span class="pill {% if v.monitoring_status and 'Stage' in v.monitoring_status %}neg{% else %}pos{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="cell-muted">No records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </section>
     {% endif %}
-
     {% endif %}
 
 </div>
