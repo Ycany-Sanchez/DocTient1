@@ -54,25 +54,25 @@
     /* Type scale (IBM Plex Sans dealt by framed-sheet) */
     --font: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* taste-skill-ignore */
-    --fs-title: 22px;
+    --fs-title: 24px;
     --fs-section: 16px;
-    --fs-kpi: 26px;
+    --fs-kpi: 28px;
     --fs-body: 14px;
     --fs-small: 12px;
 
-    /* Layout & geometry (one gutter: 24px) */
-    --sidebar-width: 228px;
-    --topbar-height: 48px;
-    --sheet-inset: 8px;
-    --pad: 24px;
-    --gap: 24px;
-    --card-pad: 20px;
+    /* Layout & geometry — spacious clinical breathing room */
+    --sidebar-width: 248px;
+    --topbar-height: 52px;
+    --sheet-inset: 12px;
+    --pad: 36px;
+    --gap: 28px;
+    --card-pad: 26px;
     --radius-sheet: 16px;
-    --radius-card: 8px;
-    --radius-control: 6px;
-    --control-height: 34px;
-    --row-height: 46px;
-    --nav-row: 34px;
+    --radius-card: 10px;
+    --radius-control: 8px;
+    --control-height: 36px;
+    --row-height: 52px;
+    --nav-row: 40px;
 
     /* Motion */
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -179,7 +179,7 @@ a:hover { text-decoration: underline; }
     height: 100svh;
     display: flex;
     flex-direction: column;
-    padding: 12px 12px 14px;
+    padding: 22px 14px 18px;
     background: var(--ground);
     overflow-y: auto;
 }
@@ -188,24 +188,24 @@ a:hover { text-decoration: underline; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 36px;
-    padding: 0 6px;
-    margin-bottom: 16px;
+    height: 40px;
+    padding: 0 8px;
+    margin-bottom: 22px;
 }
 
 .brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 11px;
     color: var(--text);
     text-decoration: none;
 }
 .brand:hover { text-decoration: none; }
 
 .brand-mark {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
     background: var(--accent);
     color: #ffffff;
     display: inline-flex;
@@ -217,16 +217,16 @@ a:hover { text-decoration: underline; }
 .brand-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.15;
+    line-height: 1.2;
 }
 .brand-name {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     color: var(--text);
 }
 .brand-scope {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
 }
 
@@ -235,11 +235,11 @@ a:hover { text-decoration: underline; }
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .sidebar-group {
-    margin: 18px 8px 6px;
+    margin: 22px 10px 8px;
     font-size: 12px;
     font-weight: 500;
     color: var(--faint);
@@ -249,9 +249,9 @@ a:hover { text-decoration: underline; }
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     height: var(--nav-row);
-    padding: 0 10px;
+    padding: 0 12px;
     border-radius: 8px;
     border: 0;
     background: transparent;
@@ -365,10 +365,11 @@ a:hover { text-decoration: underline; }
     background: var(--ground);
 }
 
+/* Desktop: clean white sheet starts right near top beside sidebar; topbar appears on <=860px */
 .app-topbar {
+    display: none;
     height: var(--topbar-height);
-    padding: 0 16px 0 8px;
-    display: flex;
+    padding: 0 16px;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -404,11 +405,11 @@ a:hover { text-decoration: underline; }
 
 .app-sheet {
     flex: 1;
-    margin: 0 var(--sheet-inset) var(--sheet-inset) 0;
+    margin: var(--sheet-inset) var(--sheet-inset) var(--sheet-inset) 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-sheet);
-    padding: var(--pad);
+    padding: 32px var(--pad);
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -544,11 +545,11 @@ a:hover { text-decoration: underline; }
 }
 
 .kpi-cell {
-    padding: 16px 18px;
+    padding: 20px 22px;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     background: transparent;
     border: 0;
     text-align: left;
@@ -574,7 +575,7 @@ a:hover { text-decoration: underline; }
     left: 0;
     right: 0;
     bottom: 0;
-    height: 2px;
+    height: 3px;
     background: var(--accent);
 }
 
@@ -631,7 +632,7 @@ a:hover { text-decoration: underline; }
 /* ---------- Clinical Danger Range Indicator Bar ---------- */
 .range-bar {
     position: relative;
-    height: 8px;
+    height: 10px;
     border-radius: 999px;
     background: var(--rule);
     overflow: visible;
@@ -692,12 +693,12 @@ a:hover { text-decoration: underline; }
 .range-marker {
     position: absolute;
     top: 50%;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     background: var(--accent);
-    border: 2px solid var(--surface);
+    border: 2.5px solid var(--surface);
     z-index: 2;
 }
 .range-bar.state-warn .range-marker {
@@ -930,7 +931,7 @@ table.data-table th:last-child,
 table.data-table td:last-child { padding-right: 0; }
 
 table.data-table td {
-    padding: 12px;
+    padding: 15px 12px;
     border-bottom: 1px solid var(--rule);
     vertical-align: middle;
     color: var(--text);
@@ -1130,6 +1131,7 @@ table.data-table tbody tr.is-alert td:first-child {
     }
     .btn.menu-toggle { display: inline-flex; }
     .app-topbar {
+        display: flex;
         padding: 0 12px;
     }
     .app-sheet {

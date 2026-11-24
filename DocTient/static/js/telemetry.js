@@ -165,7 +165,7 @@
       series: built.series,
       format: built.format,
       tickFormat: built.tickFormat,
-      height: 224,
+      height: 264,
       fill: built.series.length === 1,
       min: built.min,
       max: built.max,
@@ -173,6 +173,21 @@
       reference: built.reference,
       annotations: annotations.slice(-3),
       legend: legendEl || null,
+    });
+
+    // Tint clinical danger / optimal reference labels cleanly for instant legibility
+    const rootStyle = getComputedStyle(document.documentElement);
+    const negCol = rootStyle.getPropertyValue('--negative').trim() || '#be1e2d';
+    const posCol = rootStyle.getPropertyValue('--positive').trim() || '#156e44';
+    container.querySelectorAll('svg text').forEach((t) => {
+      const txt = (t.textContent || '').trim();
+      if (/^(Danger|High danger|Low danger|Fever|Low )/i.test(txt)) {
+        t.setAttribute('fill', negCol);
+        t.setAttribute('font-weight', '500');
+      } else if (/^Optimal/i.test(txt)) {
+        t.setAttribute('fill', posCol);
+        t.setAttribute('font-weight', '500');
+      }
     });
 
     if (legendEl && (!result || !result.legend)) {
@@ -448,11 +463,42 @@
     sync();
   }
 
+  function initVitalDrawer() {
+    const openBtn = document.getElementById('openVitalDrawerBtn');
+    const drawer = document.getElementById('logReadingDrawer');
+    const backdrop = document.getElementById('vitalDrawerBackdrop');
+    const closeBtn = document.getElementById('closeVitalDrawerBtn');
+    const cancelBtn = document.getElementById('cancelVitalDrawerBtn');
+    if (!openBtn || !drawer) return;
+
+    const setOpen = (open) => {
+      drawer.hidden = !open;
+      if (backdrop) backdrop.hidden = !open;
+      openBtn.setAttribute('aria-expanded', String(open));
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) {
+        const firstInput = drawer.querySelector('#in_systolic');
+        firstInput?.focus();
+      } else {
+        openBtn.focus();
+      }
+    };
+
+    openBtn.addEventListener('click', () => setOpen(true));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+    cancelBtn?.addEventListener('click', () => setOpen(false));
+    backdrop?.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !drawer.hidden) setOpen(false);
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initTelemetryDecks();
     initAjaxMedications();
     initVitalLivePreview();
+    initVitalDrawer();
     initDarkModePreview();
     initRolePicker();
   });

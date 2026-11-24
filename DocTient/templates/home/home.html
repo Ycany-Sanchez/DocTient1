@@ -5,7 +5,7 @@
 {% block breadcrumb %}Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home/home.css' %}?v=20261124">
+<link rel="stylesheet" href="{% static 'css/home/home.css' %}?v=20261124b">
 {% endblock %}
 
 {% block content %}
@@ -90,7 +90,10 @@
         </div>
         <div class="page-actions">
             <a href="{% url 'reports:reports' %}" class="btn">Clinical report</a>
-            <a href="#logReadingSection" class="btn primary">Log vital reading</a>
+            <button type="button" class="btn primary" id="openVitalDrawerBtn" aria-controls="logReadingDrawer" aria-expanded="false">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+                Log vital reading
+            </button>
         </div>
     </div>
 
@@ -111,7 +114,7 @@
             >
                 <span class="kpi-top">
                     <span class="kpi-label">{{ g.name }}</span>
-                    <span class="kpi-state is-{{ g.state }}">{{ g.state_label }}</span>
+                    <span class="pill {% if g.state == 'danger' %}neg{% elif g.state == 'warn' %}warn{% elif g.state == 'normal' %}pos{% endif %}">{{ g.state_label }}</span>
                 </span>
                 <span class="kpi-value">
                     {{ g.value }}{% if g.value != "–" %}<span class="kpi-unit">{{ g.unit }}</span>{% endif %}
@@ -223,67 +226,16 @@
         </div>
     </div>
 
-    <!-- Secondary Row: Record New Biometric Reading (7 cols) + Attending Physician Care Plan (5 cols) -->
+    <!-- Lower Row: Attending Physician Guidance (4 cols) + Biometric History (8 cols) -->
     <div class="app-grid">
-        <section id="logReadingSection" class="panel {% if doctor_conns %}span-7{% else %}span-12{% endif %}">
-            <div class="panel-head">
-                <div>
-                    <h2>Record biometric reading</h2>
-                    <p class="panel-sub">New entries update your threshold bars and trend graphs immediately.</p>
-                </div>
-                <span class="pill" id="vitalRiskPreview">Auto-evaluated on entry</span>
-            </div>
-
-            <form method="post" class="app-stack" data-vital-form>
-                {% csrf_token %}
-                <input type="hidden" name="action" value="log_vital">
-
-                <div class="form-grid-3">
-                    <div class="field">
-                        <label for="in_systolic">Systolic (mmHg)</label>
-                        <input id="in_systolic" type="number" name="systolic" class="input" placeholder="118" min="60" max="250" required>
-                    </div>
-                    <div class="field">
-                        <label for="in_diastolic">Diastolic (mmHg)</label>
-                        <input id="in_diastolic" type="number" name="diastolic" class="input" placeholder="78" min="40" max="150" required>
-                    </div>
-                    <div class="field">
-                        <label for="in_hr">Heart rate (bpm)</label>
-                        <input id="in_hr" type="number" name="heart_rate" class="input" placeholder="72" min="30" max="220">
-                    </div>
-                    <div class="field">
-                        <label for="in_spo2">Oxygen SpO₂ (%)</label>
-                        <input id="in_spo2" type="number" step="0.1" name="oxygen_saturation" class="input" placeholder="98.5" min="70" max="100">
-                    </div>
-                    <div class="field">
-                        <label for="in_temp">Temperature (°C)</label>
-                        <input id="in_temp" type="number" step="0.1" name="temperature_celsius" class="input" placeholder="36.6" min="34" max="43">
-                    </div>
-                    <div class="field">
-                        <label for="in_weight">Weight (kg)</label>
-                        <input id="in_weight" type="number" step="0.1" name="weight_kg" class="input" placeholder="65.0" min="20" max="300">
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="in_notes">Observations and context</label>
-                    <input id="in_notes" type="text" name="patient_notes" class="input" placeholder="Resting morning reading, symptoms, or medication timing">
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn primary">Save reading</button>
-                </div>
-            </form>
-        </section>
-
         {% if doctor_conns %}
-        <section class="panel span-5">
+        <section class="panel span-4">
             <div class="panel-head">
                 <div>
                     <h2>Attending physician guidance</h2>
                     <p class="panel-sub">{{ doctor_conns|length }} connected care provider{{ doctor_conns|length|pluralize }}</p>
                 </div>
-                <a href="{% url 'messages:messages' %}" class="btn btn-sm">Message care team</a>
+                <a href="{% url 'messages:messages' %}" class="btn btn-sm">Message</a>
             </div>
 
             <div class="guidance-list">
@@ -306,57 +258,113 @@
             </div>
         </section>
         {% endif %}
+
+        <section class="panel {% if doctor_conns %}span-8{% else %}span-12{% endif %}">
+            <div class="panel-head">
+                <div>
+                    <h2>Biometric history</h2>
+                    <p class="panel-sub">Recent vital sign sessions</p>
+                </div>
+                <a href="{% url 'reports:reports' %}" class="btn btn-sm">Full log ({{ vitals|length }})</a>
+            </div>
+
+            {% if vitals %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Recorded</th>
+                            <th class="n">Blood pressure</th>
+                            <th class="n">Heart rate</th>
+                            <th class="n">SpO₂</th>
+                            <th class="n">Temp</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vitals|slice:":6" %}
+                        <tr class="{% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}is-alert{% endif %}">
+                            <td class="num" style="white-space: nowrap;">{{ v.recorded_at|date:"M d, H:i" }}</td>
+                            <td class="n cell-primary">{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} <span class="cell-muted">mmHg</span>{% else %}–{% endif %}</td>
+                            <td class="n">{% if v.heart_rate %}{{ v.heart_rate }} <span class="cell-muted">bpm</span>{% else %}–{% endif %}</td>
+                            <td class="n">{% if v.oxygen_saturation %}{{ v.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                            <td class="n">{% if v.temperature_celsius %}{{ v.temperature_celsius }}°C{% else %}–{% endif %}</td>
+                            <td>
+                                <span class="pill {% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}neg{% elif v.monitoring_status and 'Stage 1' in v.monitoring_status or v.monitoring_status and 'Elevated' in v.monitoring_status %}warn{% else %}pos{% endif %}">
+                                    {{ v.monitoring_status|default:"Normal" }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty">No biometric history recorded yet.</div>
+            {% endif %}
+        </section>
     </div>
 
-    <!-- Biometric History Table -->
-    <section class="panel">
-        <div class="panel-head">
+    <!-- Slide-Over Drawer: Record New Biometric Reading (Keeps canvas calm & uncluttered) -->
+    <div class="drawer-backdrop" id="vitalDrawerBackdrop" hidden></div>
+    <aside id="logReadingDrawer" class="vital-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
+        <div class="drawer-head">
             <div>
-                <h2>Biometric history</h2>
-                <p class="panel-sub">Chronological log of recorded vital signs</p>
+                <h2 id="drawerTitle">Record biometric reading</h2>
+                <p class="panel-sub">Threshold bars and trend graphs update immediately after saving.</p>
             </div>
-            <span class="panel-meta num">{{ vitals|length }} session{{ vitals|length|pluralize }}</span>
+            <button type="button" class="btn ghost icon-only" id="closeVitalDrawerBtn" aria-label="Close panel">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
         </div>
 
-        {% if vitals %}
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Recorded</th>
-                        <th class="n">Blood pressure</th>
-                        <th class="n">Heart rate</th>
-                        <th class="n">SpO₂</th>
-                        <th class="n">Temp</th>
-                        <th class="n">Weight</th>
-                        <th>Classification</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for v in vitals %}
-                    <tr class="{% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}is-alert{% endif %}">
-                        <td class="num" style="white-space: nowrap;">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
-                        <td class="n cell-primary">{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} <span class="cell-muted">mmHg</span>{% else %}–{% endif %}</td>
-                        <td class="n">{% if v.heart_rate %}{{ v.heart_rate }} <span class="cell-muted">bpm</span>{% else %}–{% endif %}</td>
-                        <td class="n">{% if v.oxygen_saturation %}{{ v.oxygen_saturation }}%{% else %}–{% endif %}</td>
-                        <td class="n">{% if v.temperature_celsius %}{{ v.temperature_celsius }}°C{% else %}–{% endif %}</td>
-                        <td class="n">{% if v.weight_kg %}{{ v.weight_kg }} <span class="cell-muted">kg</span>{% else %}–{% endif %}</td>
-                        <td>
-                            <span class="pill {% if v.monitoring_status and 'Stage 2' in v.monitoring_status or v.monitoring_status and 'Low' in v.monitoring_status %}neg{% elif v.monitoring_status and 'Stage 1' in v.monitoring_status or v.monitoring_status and 'Elevated' in v.monitoring_status %}warn{% else %}pos{% endif %}">
-                                {{ v.monitoring_status|default:"Normal" }}
-                            </span>
-                        </td>
-                        <td class="cell-muted truncate">{{ v.patient_notes|default:"–" }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="drawer-status-bar">
+            <span class="panel-meta">Clinical evaluation</span>
+            <span class="pill" id="vitalRiskPreview">Auto-evaluated on entry</span>
         </div>
-        {% else %}
-        <div class="empty">No biometric history recorded yet.</div>
-        {% endif %}
-    </section>
+
+        <form method="post" class="drawer-form" data-vital-form>
+            {% csrf_token %}
+            <input type="hidden" name="action" value="log_vital">
+
+            <div class="form-grid-2">
+                <div class="field">
+                    <label for="in_systolic">Systolic (mmHg)</label>
+                    <input id="in_systolic" type="number" name="systolic" class="input" placeholder="118" min="60" max="250" required>
+                </div>
+                <div class="field">
+                    <label for="in_diastolic">Diastolic (mmHg)</label>
+                    <input id="in_diastolic" type="number" name="diastolic" class="input" placeholder="78" min="40" max="150" required>
+                </div>
+                <div class="field">
+                    <label for="in_hr">Heart rate (bpm)</label>
+                    <input id="in_hr" type="number" name="heart_rate" class="input" placeholder="72" min="30" max="220">
+                </div>
+                <div class="field">
+                    <label for="in_spo2">Oxygen SpO₂ (%)</label>
+                    <input id="in_spo2" type="number" step="0.1" name="oxygen_saturation" class="input" placeholder="98.5" min="70" max="100">
+                </div>
+                <div class="field">
+                    <label for="in_temp">Temperature (°C)</label>
+                    <input id="in_temp" type="number" step="0.1" name="temperature_celsius" class="input" placeholder="36.6" min="34" max="43">
+                </div>
+                <div class="field">
+                    <label for="in_weight">Weight (kg)</label>
+                    <input id="in_weight" type="number" step="0.1" name="weight_kg" class="input" placeholder="65.0" min="20" max="300">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="in_notes">Observations and context</label>
+                <textarea id="in_notes" name="patient_notes" class="input" rows="3" placeholder="Resting morning reading, symptoms, or medication timing"></textarea>
+            </div>
+
+            <div class="drawer-actions">
+                <button type="button" class="btn" id="cancelVitalDrawerBtn">Cancel</button>
+                <button type="submit" class="btn primary">Save reading</button>
+            </div>
+        </form>
+    </aside>
 
     {% elif is_doctor %}
     <!-- =========================================================

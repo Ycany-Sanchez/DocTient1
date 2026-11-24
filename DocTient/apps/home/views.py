@@ -177,7 +177,7 @@ def build_clinical_vital_gauges(latest, vitals_list, patient=None):
             "state": bp_state,
             "state_label": bp_label,
             "marker_pct": bp_pos,
-            "range_note": "Safe <120/80 · Danger ≥140/90",
+            "range_note": "Limit ≥140/90",
             # Zones on 80..180 scale: low danger 0..10%, safe 10..40%, warn 40..60%, high danger 60..100%
             "danger_low_end": 10.0,
             "warn_start": 40.0,
@@ -191,7 +191,7 @@ def build_clinical_vital_gauges(latest, vitals_list, patient=None):
             "state": hr_state,
             "state_label": hr_label,
             "marker_pct": hr_pos,
-            "range_note": "Safe 60–100 · Danger <55 / >105",
+            "range_note": "55–105 bpm",
             # Scale 40..140: low danger 0..15%, safe 15..60%, warn 60..65%, high danger 65..100%
             "danger_low_end": 15.0,
             "warn_start": 60.0,
@@ -205,7 +205,7 @@ def build_clinical_vital_gauges(latest, vitals_list, patient=None):
             "state": spo2_state,
             "state_label": spo2_label,
             "marker_pct": spo2_pos,
-            "range_note": "Safe ≥95% · Danger <92%",
+            "range_note": "Min 92%",
             # Scale 85..100: low danger 0..46.7% (<92), warn 46.7..66.7% (92-95), safe 66.7..100%
             "danger_low_end": 46.7,
             "warn_low_end": 66.7,
@@ -220,7 +220,7 @@ def build_clinical_vital_gauges(latest, vitals_list, patient=None):
             "state": temp_state,
             "state_label": temp_label,
             "marker_pct": temp_pos,
-            "range_note": "Safe 35.5–37.4 · Danger ≥38.0°C",
+            "range_note": "Max 38.0°C",
             # Scale 34.5..40.0 (span 5.5): low danger <35.5 (18.2%), warn 37.5..38.0 (54.5..63.6%), danger >=38.0 (63.6%+)
             "danger_low_end": 18.2,
             "warn_start": 54.5,
