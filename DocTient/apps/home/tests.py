@@ -116,3 +116,53 @@ class DocTientDashboardTests(TestCase):
         self.assertIsNotNone(vital)
         self.assertEqual(vital.systolic, 118)
         self.assertEqual(vital.monitoring_status, "Normal")
+
+    def test_patient_ajax_toggle_medication_without_refresh(self):
+        self.client.login(username="test_patient", password="Password123!")
+        headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+        # Mark taken via AJAX -> returns JSON 200 (no redirect)
+        resp = self.client.post(
+            reverse("home:home"),
+            {"action": "toggle_medication_taken", "medication_id": str(self.med.id)},
+            **headers,
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["ok"])
+        self.assertTrue(data["taken_today"])
+        self.assertEqual(data["taken_today_count"], 1)
+        self.assertEqual(data["today_adherence_pct"], 100)
+
+        # Toggle off (undo) via AJAX -> removes today's log without refresh
+        resp2 = self.client.post(
+            reverse("home:home"),
+            {"action": "toggle_medication_taken", "medication_id": str(self.med.id)},
+            **headers,
+        )
+        self.assertEqual(resp2.status_code, 200)
+        data2 = resp2.json()
+        self.assertTrue(data2["ok"])
+        self.assertFalse(data2["taken_today"])
+        self.assertEqual(data2["taken_today_count"], 0)
+        self.assertEqual(data2["today_adherence_pct"], 0)
+
+    def test_patient_dashboard_computes_clinical_danger_gauges(self):
+        VitalSign.objects.create(
+            patient=self.patient_profile,
+            systolic=152,
+            diastolic=95,
+            heart_rate=112,
+            oxygen_saturation=Decimal("90.5"),
+            temperature_celsius=Decimal("38.4"),
+            weight_kg=Decimal("70.0"),
+            monitoring_status="Stage 2 HTN",
+        )
+        self.client.login(username="test_patient", password="Password123!")
+        resp = self.client.get(reverse("home:home"))
+        self.assertEqual(resp.status_code, 200)
+        gauges = {g["key"]: g for g in resp.context["vital_gauges"]}
+        self.assertEqual(gauges["bp"]["state"], "danger")
+        self.assertEqual(gauges["hr"]["state"], "danger")
+        self.assertEqual(gauges["spo2"]["state"], "danger")
+        self.assertEqual(gauges["temp"]["state"], "danger")
+

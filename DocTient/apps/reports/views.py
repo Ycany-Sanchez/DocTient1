@@ -11,6 +11,7 @@ from apps.clinic.models import (
     Medication,
     MedicationLog,
 )
+from apps.home.views import build_clinical_vital_gauges, build_vitals_chart_payload, _clamp_pct
 
 
 def _calculate_bmi(weight_kg, height_cm):
@@ -52,7 +53,7 @@ def reports_view(request):
         avg_sys, avg_dia, avg_hr, avg_spo2, avg_temp = None, None, None, None, None
         min_sys, max_sys = None, None
         pulse_pressure = None
-        bp_classification = "No Data"
+        bp_classification = "No data"
         bp_badge = "badge-muted"
 
         if total_readings > 0:
@@ -71,7 +72,7 @@ def reports_view(request):
             if avg_sys and avg_dia:
                 pulse_pressure = avg_sys - avg_dia
                 if avg_sys < 120 and avg_dia < 80:
-                    bp_classification = "Optimal / Normal"
+                    bp_classification = "Normal"
                     bp_badge = "badge-success"
                 elif avg_sys <= 129 and avg_dia < 80:
                     bp_classification = "Elevated"
@@ -94,6 +95,7 @@ def reports_view(request):
         latest_vital = vitals[0] if vitals else None
         current_weight = latest_vital.weight_kg if latest_vital and latest_vital.weight_kg else patient.weight_kg
         bmi_value, bmi_category = _calculate_bmi(current_weight, patient.height_cm)
+        bmi_marker_pct = _clamp_pct(bmi_value, 15.0, 35.0) if bmi_value is not None else None
 
         # Medication Compliance Rate
         medications = list(patient.medications.all())
@@ -118,15 +120,9 @@ def reports_view(request):
             usable_width = canvas_width - pad_left - pad_right
 
             for i, v in enumerate(trend_readings):
-                if n_points == 1:
-                    x = canvas_width / 2
-                else:
-                    x = pad_left + (i / (n_points - 1)) * usable_width
-
+                x = canvas_width / 2 if n_points == 1 else pad_left + (i / (n_points - 1)) * usable_width
                 sys_val = v.systolic if v.systolic is not None else 120
-                # 120 mmHg maps to y=60; 1.8 px per mmHg
                 y = max(18.0, min(108.0, round(60.0 - (sys_val - 120) * 1.8, 1)))
-
                 chart_points.append({
                     "x": round(x, 1),
                     "y": y,
@@ -144,6 +140,15 @@ def reports_view(request):
                     + f" L {chart_points[-1]['x']},120 L {chart_points[0]['x']},120 Z"
                 )
 
+        # Build clinical gauges & interactive multi-vital JSON series
+        vital_gauges = build_clinical_vital_gauges(latest_vital, vitals, patient=patient)
+        vitals_chart_data = build_vitals_chart_payload(vitals)
+
+        # Mean marker positions for report summary danger bars
+        avg_bp_pct = _clamp_pct(avg_sys, 80, 180) if avg_sys is not None else None
+        avg_hr_pct = _clamp_pct(avg_hr, 40, 140) if avg_hr is not None else None
+        avg_spo2_pct = _clamp_pct(avg_spo2, 85, 100) if avg_spo2 is not None else None
+
         return render(request, "reports/reports.html", {
             "is_patient": True,
             "patient": patient,
@@ -158,9 +163,13 @@ def reports_view(request):
             "avg_hr": avg_hr,
             "avg_spo2": avg_spo2,
             "avg_temp": avg_temp,
+            "avg_bp_pct": avg_bp_pct,
+            "avg_hr_pct": avg_hr_pct,
+            "avg_spo2_pct": avg_spo2_pct,
             "current_weight": current_weight,
             "bmi_value": bmi_value,
             "bmi_category": bmi_category,
+            "bmi_marker_pct": bmi_marker_pct,
             "medications": medications,
             "adherence_rate": adherence_rate,
             "adherence_style": adherence_style,
@@ -169,6 +178,8 @@ def reports_view(request):
             "trend_polyline_points": trend_polyline_points,
             "trend_area_path": trend_area_path,
             "latest_vital": latest_vital,
+            "vital_gauges": vital_gauges,
+            "vitals_chart_data": vitals_chart_data,
         })
 
     # ==========================================
@@ -207,12 +218,14 @@ def reports_view(request):
             if latest.oxygen_saturation:
                 all_spo2.append(float(latest.oxygen_saturation))
 
+        p.bp_marker_pct = _clamp_pct(latest.systolic, 80, 180) if latest and latest.systolic else None
+
         if latest and (
             (latest.systolic and latest.systolic >= 140)
             or (latest.diastolic and latest.diastolic >= 90)
             or (latest.oxygen_saturation and float(latest.oxygen_saturation) < 92)
         ):
-            p.triage_level = "High Priority"
+            p.triage_level = "High priority"
             p.triage_badge = "badge-danger"
             triage_alerts.append(p)
         elif latest and (
@@ -227,10 +240,8 @@ def reports_view(request):
             p.triage_badge = "badge-success"
             normal_patients.append(p)
 
-        # Recent vitals for per-patient mini table
         p.recent_vitals = list(p.vital_signs.all()[:5])
 
-    # Cohort aggregate statistics
     cohort_avg_sys = round(sum(all_sys) / len(all_sys)) if all_sys else None
     cohort_avg_dia = round(sum(all_dia) / len(all_dia)) if all_dia else None
     cohort_avg_hr = round(sum(all_hr) / len(all_hr)) if all_hr else None
@@ -244,6 +255,8 @@ def reports_view(request):
     detail_medications = []
     detail_adherence = 100
     detail_connection = None
+    detail_gauges = []
+    detail_chart_data = None
     detail_id = request.GET.get("patient_id")
     if detail_id:
         try:
@@ -257,10 +270,15 @@ def reports_view(request):
                 detail_connection = DoctorPatientConnection.objects.filter(
                     doctor=doctor, patient=detail_patient
                 ).first()
+                detail_gauges = build_clinical_vital_gauges(
+                    detail_vitals[0] if detail_vitals else None,
+                    detail_vitals,
+                    patient=detail_patient,
+                )
+                detail_chart_data = build_vitals_chart_payload(detail_vitals)
         except PatientProfile.DoesNotExist:
             detail_patient = None
 
-    # Doctor notes history
     doctor_notes = list(DoctorNote.objects.filter(doctor=doctor).order_by("-id")[:20])
 
     return render(request, "reports/reports.html", {
@@ -283,7 +301,7 @@ def reports_view(request):
         "detail_medications": detail_medications,
         "detail_adherence": detail_adherence,
         "detail_connection": detail_connection,
+        "detail_gauges": detail_gauges,
+        "detail_chart_data": detail_chart_data,
         "doctor_notes": doctor_notes,
     })
-
-
