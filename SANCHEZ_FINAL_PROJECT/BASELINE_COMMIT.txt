@@ -1,3 +1,4 @@
-1b27e39d52a9c55e7a879ea3dbd2c785ec43f110 | Ycany-Sanchez | 2026-10-07 13:49:45 +0800 | refactor: removed the settings and my profile from dashboard
+3dfa6275a318582dbf1d1fcd3816b023e23264ff | Ycany a | 2026-11-24 14:24:44 +0800 | feat(reports): add SQL JOIN and SUBQUERY views, templates, tests, and seed/verify commands
+bf3200b95806df1d29217789db2d8790b041afbf | Ycany-Sanchez | 2026-11-17 16:44:55 +0800 | Baseline Commit 2
 64efcc06af81721ea2e33373e96c19a9435d9e27 | Ycany-Sanchez | 2026-11-10 17:38:47 +0800 | feat: add patient and doctor cohort clinical reporting views and templates
-
+1b27e39d52a9c55e7a879ea3dbd2c785ec43f110 | Ycany-Sanchez | 2026-10-07 13:49:45 +0800 | refactor: removed the settings and my profile from dashboard
