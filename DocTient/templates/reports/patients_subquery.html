@@ -95,23 +95,5 @@
             </table>
         </div>
     </div>
-
-    <div class="sql-inspect-card">
-        <h3>Django ORM &amp; Generated PostgreSQL Query (SUBQUERY Verification)</h3>
-        <div class="sql-inspect-meta">
-            <span class="sql-meta-pill">Outer Query: patient_profiles</span>
-            <span class="sql-meta-pill">Inner Query: SELECT patient_id FROM vital_signs</span>
-            <span class="sql-meta-pill">Condition: id__in=Subquery(...)</span>
-        </div>
-
-        <div class="sql-code-label">Django ORM Query</div>
-        <pre class="sql-code-block">vital_patient_ids = VitalSign.objects.values("patient_id")
-patients = PatientProfile.objects.filter(
-    id__in=Subquery(vital_patient_ids)
-).order_by("id")</pre>
-
-        <div class="sql-code-label">Generated SQL (print(patients.query))</div>
-        <pre class="sql-code-block">{{ generated_sql }}</pre>
-    </div>
 </div>
 {% endblock %}

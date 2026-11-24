@@ -112,20 +112,5 @@
             </table>
         </div>
     </div>
-
-    <div class="sql-inspect-card">
-        <h3>Django ORM &amp; Generated PostgreSQL Query (JOIN Verification)</h3>
-        <div class="sql-inspect-meta">
-            <span class="sql-meta-pill">Main Table: patient_profiles (PK: id)</span>
-            <span class="sql-meta-pill">Related Table: vital_signs (FK: patient_id)</span>
-            <span class="sql-meta-pill">Relationship: One-to-Many (1:M)</span>
-        </div>
-
-        <div class="sql-code-label">Django ORM Query</div>
-        <pre class="sql-code-block">vitals = VitalSign.objects.select_related("patient").all()</pre>
-
-        <div class="sql-code-label">Generated SQL (print(vitals.query))</div>
-        <pre class="sql-code-block">{{ generated_sql }}</pre>
-    </div>
 </div>
 {% endblock %}
