@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261124">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -172,8 +172,8 @@
     </main>
     {% endif %}
 
-    <script src="{% static 'js/charts.js' %}"></script>
-    <script src="{% static 'js/telemetry.js' %}"></script>
+    <script src="{% static 'js/charts.js' %}?v=20261124"></script>
+    <script src="{% static 'js/telemetry.js' %}?v=20261124"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
