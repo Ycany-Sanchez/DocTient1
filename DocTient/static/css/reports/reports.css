@@ -1,42 +1,162 @@
-/* DocTient — Clinical Reports Specific Styles */
+/* DocTient — Clinical Audit Reports Styles (Zero overlap with Dashboard) */
 
-.report-chart-controls {
+.report-toolbar {
     display: flex;
     align-items: center;
-    gap: 14px;
+    justify-content: space-between;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
-.metric-switch {
+.range-segmented {
     display: inline-flex;
-    padding: 2px;
+    padding: 3px;
     border-radius: var(--radius-control);
     background: var(--raised);
     border: 1px solid var(--border);
+    gap: 2px;
 }
 
-.metric-switch button {
-    height: 28px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--muted);
+.seg-link {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
-    cursor: pointer;
+    color: var(--muted);
+    text-decoration: none;
     transition: background-color var(--t-fast) ease, color var(--t-fast) ease;
 }
-
-.metric-switch button:hover {
+.seg-link:hover {
     color: var(--text);
+    text-decoration: none;
 }
-
-.metric-switch button[aria-selected="true"] {
+.seg-link.is-active {
     background: var(--surface);
     color: var(--text);
 }
 
+/* 100% Stacked Clinical Risk Distribution Bar */
+.risk-stacked-bar {
+    display: flex;
+    width: 100%;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--rule);
+    gap: 2px;
+    margin-bottom: 18px;
+}
+
+.risk-seg {
+    height: 100%;
+    display: block;
+    transition: width var(--t-ui) var(--ease-out);
+}
+.seg-normal { background: var(--accent); }
+.seg-elevated { background: #d4962a; }
+.seg-stage1 { background: #b86516; }
+.seg-danger { background: var(--negative); }
+
+.risk-breakdown-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.risk-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid var(--rule);
+}
+.risk-row:first-child { border-top: 0; padding-top: 2px; }
+.risk-row:last-child { padding-bottom: 0; }
+
+.risk-label-col {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.risk-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.risk-num-col {
+    text-align: right;
+    flex: none;
+}
+
+/* Min / Mean / Max Clinical Spread Bars */
+.spread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.spread-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.spread-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.spread-figures {
+    font-size: 13px;
+    color: var(--text);
+}
+.spread-figures strong {
+    font-weight: 600;
+    color: var(--text);
+}
+.spread-sep {
+    color: var(--control);
+    margin: 0 3px;
+}
+
+.spread-span-band {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    border-radius: 999px;
+    background: var(--accent);
+    z-index: 2;
+}
+.spread-span-band.is-warn { background: var(--warning); }
+.spread-span-band.is-danger { background: var(--negative); }
+
+.spread-mean-tick {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--text);
+    z-index: 3;
+}
+
+.spread-foot {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+/* BMI & Notes */
 .regimen-list {
     display: flex;
     flex-direction: column;
@@ -47,7 +167,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 0;
+    padding: 12px 0;
     border-top: 1px solid var(--rule);
 }
 .regimen-row:first-child { border-top: 0; padding-top: 0; }
@@ -59,25 +179,25 @@
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .bmi-scale-block {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .bmi-scale-labels {
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 6px;
-    font-size: 11px;
+    margin-top: 8px;
+    font-size: 12px;
     color: var(--muted);
 }
 
 .clinical-note-box {
     margin-top: auto;
-    padding: 12px 14px;
+    padding: 14px 16px;
     border-radius: var(--radius-control);
     background: var(--raised);
     border: 1px solid var(--border);

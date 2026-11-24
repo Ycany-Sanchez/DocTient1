@@ -5,7 +5,7 @@
 {% block breadcrumb %}Reports{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/reports/reports.css' %}?v=20261124b">
+<link rel="stylesheet" href="{% static 'css/reports/reports.css' %}?v=20261124c">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
 
     {% if is_patient %}
     <!-- =========================================================
-         PATIENT CLINICAL REPORT
+         PATIENT CLINICAL AUDIT REPORT (Analytical — Zero overlap with Dashboard)
          ========================================================= -->
     <div class="page-head">
         <div class="page-title-group">
@@ -22,23 +22,36 @@
                 <span class="pill {% if bp_badge == 'badge-danger' %}neg{% elif bp_badge == 'badge-warning' %}warn{% elif bp_badge == 'badge-success' %}pos{% endif %}">{{ bp_classification }}</span>
             </div>
             <p class="page-finding">
-                <strong>{{ patient.full_name }}</strong> ·
-                {% if avg_sys %}Mean BP <strong>{{ avg_sys }}/{{ avg_dia }} mmHg</strong> across {{ total_readings }} diagnostic session{{ total_readings|pluralize }}{% else %}No diagnostic sessions recorded yet{% endif %} ·
-                Prescription adherence <strong>{{ adherence_rate }}%</strong>
+                <strong>{{ patient.full_name }}</strong> · {{ range_label }} ({{ total_readings }} session{{ total_readings|pluralize }}) ·
+                {% if danger_session_count > 0 %}
+                <span class="finding-alert">{{ danger_session_count }} danger-zone session{{ danger_session_count|pluralize }}</span>
+                {% else %}
+                {{ normal_session_pct }}% of sessions inside normal range
+                {% endif %}
             </p>
         </div>
         <div class="page-actions no-print">
-            <a href="{% url 'home:home' %}" class="btn">Back to dashboard</a>
+            <a href="?range={{ range_key }}&export=csv" class="btn">Export CSV</a>
             <button type="button" onclick="window.print()" class="btn primary">Print report</button>
         </div>
     </div>
 
-    <!-- 4-Column Mean Metrics Strip with Clinical Range Bars -->
+    <!-- Timeframe Filter Toolbar -->
+    <div class="report-toolbar no-print">
+        <div class="range-segmented" role="navigation" aria-label="Report time window">
+            <a href="?range=7d" class="seg-link {% if range_key == '7d' %}is-active{% endif %}">Last 7 days</a>
+            <a href="?range=30d" class="seg-link {% if range_key == '30d' %}is-active{% endif %}">Last 30 days</a>
+            <a href="?range=all" class="seg-link {% if range_key == 'all' %}is-active{% endif %}">All sessions</a>
+        </div>
+        <span class="panel-meta num">Showing {{ total_readings }} diagnostic session{{ total_readings|pluralize }}</span>
+    </div>
+
+    <!-- 4-Column Diagnostic Aggregates Strip (Hemodynamics & Overall Adherence) -->
     <div class="kpi-strip">
         <div class="kpi-cell {% if bp_badge == 'badge-danger' %}state-danger{% endif %}">
             <span class="kpi-top">
                 <span class="kpi-label">Mean Blood Pressure</span>
-                <span class="kpi-state {% if bp_badge == 'badge-danger' %}is-danger{% elif bp_badge == 'badge-warning' %}is-warn{% elif bp_badge == 'badge-success' %}is-normal{% else %}is-none{% endif %}">
+                <span class="pill {% if bp_badge == 'badge-danger' %}neg{% elif bp_badge == 'badge-warning' %}warn{% elif bp_badge == 'badge-success' %}pos{% endif %}">
                     {% if bp_badge == 'badge-danger' %}Danger{% elif bp_badge == 'badge-warning' %}Elevated{% elif bp_badge == 'badge-success' %}Normal{% else %}No data{% endif %}
                 </span>
             </span>
@@ -52,52 +65,53 @@
                 <span class="range-marker" style="left: {{ avg_bp_pct }}%;"></span>
                 {% endif %}
             </span>
-            <span class="kpi-note">Pulse pressure {{ pulse_pressure|default:"–" }} mmHg · Danger ≥140/90</span>
+            <span class="kpi-note">{% if min_sys and max_sys %}Range {{ min_sys }}–{{ max_sys }} mmHg{% else %}Limit ≥140/90{% endif %}</span>
         </div>
 
-        <div class="kpi-cell">
+        <div class="kpi-cell {% if map_state == 'danger' %}state-danger{% endif %}">
             <span class="kpi-top">
-                <span class="kpi-label">Resting heart rate</span>
-                <span class="kpi-state {% if avg_hr and avg_hr > 105 or avg_hr and avg_hr < 55 %}is-danger{% elif avg_hr %}is-normal{% else %}is-none{% endif %}">
-                    {% if avg_hr and avg_hr > 105 or avg_hr and avg_hr < 55 %}Danger{% elif avg_hr %}Normal{% else %}No data{% endif %}
+                <span class="kpi-label">Mean arterial pressure</span>
+                <span class="pill {% if map_state == 'danger' %}neg{% elif map_state == 'warn' %}warn{% elif map_state == 'normal' %}pos{% endif %}">
+                    {% if map_state == 'danger' %}Danger{% elif map_state == 'warn' %}Borderline{% elif map_state == 'normal' %}Normal{% else %}No data{% endif %}
                 </span>
             </span>
-            <span class="kpi-value">{% if avg_hr %}{{ avg_hr }}<span class="kpi-unit">bpm</span>{% else %}–{% endif %}</span>
-            <span class="range-bar {% if avg_hr and avg_hr > 105 or avg_hr and avg_hr < 55 %}state-danger{% else %}state-normal{% endif %}" aria-hidden="true">
-                <span class="range-zone zone-danger zone-danger-left" style="width: 15%;"></span>
-                <span class="range-zone zone-safe" style="left: 15%; right: 40%; border-radius: 0;"></span>
-                <span class="range-zone zone-warn" style="left: 60%; width: 5%;"></span>
-                <span class="range-zone zone-danger zone-danger-right" style="left: 65%;"></span>
-                {% if avg_hr_pct is not None %}
-                <span class="range-marker" style="left: {{ avg_hr_pct }}%;"></span>
+            <span class="kpi-value">{% if mean_arterial_pressure %}{{ mean_arterial_pressure }}<span class="kpi-unit">mmHg</span>{% else %}–{% endif %}</span>
+            <span class="range-bar state-{{ map_state }}" aria-hidden="true">
+                <span class="range-zone zone-danger zone-danger-left" style="width: 13.3%;"></span>
+                <span class="range-zone zone-safe" style="left: 13.3%; width: 46.7%; border-radius: 0;"></span>
+                <span class="range-zone zone-warn" style="left: 60%; width: 13.3%;"></span>
+                <span class="range-zone zone-danger zone-danger-right" style="left: 73.3%;"></span>
+                {% if map_marker_pct is not None %}
+                <span class="range-marker" style="left: {{ map_marker_pct }}%;"></span>
                 {% endif %}
             </span>
-            <span class="kpi-note">Safe 60–100 · Danger &lt;55 or &gt;105 bpm</span>
+            <span class="kpi-note">Target 70–100 mmHg</span>
         </div>
 
-        <div class="kpi-cell">
+        <div class="kpi-cell {% if pp_state == 'danger' %}state-danger{% endif %}">
             <span class="kpi-top">
-                <span class="kpi-label">Mean oxygen SpO₂</span>
-                <span class="kpi-state {% if avg_spo2 and avg_spo2 < 92 %}is-danger{% elif avg_spo2 and avg_spo2 < 95 %}is-warn{% elif avg_spo2 %}is-normal{% else %}is-none{% endif %}">
-                    {% if avg_spo2 and avg_spo2 < 92 %}Danger{% elif avg_spo2 and avg_spo2 < 95 %}Low{% elif avg_spo2 %}Normal{% else %}No data{% endif %}
+                <span class="kpi-label">Pulse pressure</span>
+                <span class="pill {% if pp_state == 'danger' %}neg{% elif pp_state == 'warn' %}warn{% elif pp_state == 'normal' %}pos{% endif %}">
+                    {% if pp_state == 'danger' %}Wide{% elif pp_state == 'warn' %}Borderline{% elif pp_state == 'normal' %}Normal{% else %}No data{% endif %}
                 </span>
             </span>
-            <span class="kpi-value">{% if avg_spo2 %}{{ avg_spo2 }}<span class="kpi-unit">%</span>{% else %}–{% endif %}</span>
-            <span class="range-bar {% if avg_spo2 and avg_spo2 < 92 %}state-danger{% elif avg_spo2 and avg_spo2 < 95 %}state-warn{% else %}state-normal{% endif %}" aria-hidden="true">
-                <span class="range-zone zone-danger zone-danger-left" style="width: 46.7%;"></span>
-                <span class="range-zone zone-warn" style="left: 46.7%; width: 20%;"></span>
-                <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
-                {% if avg_spo2_pct is not None %}
-                <span class="range-marker" style="left: {{ avg_spo2_pct }}%;"></span>
+            <span class="kpi-value">{% if pulse_pressure %}{{ pulse_pressure }}<span class="kpi-unit">mmHg</span>{% else %}–{% endif %}</span>
+            <span class="range-bar state-{{ pp_state }}" aria-hidden="true">
+                <span class="range-zone zone-danger zone-danger-left" style="width: 10%;"></span>
+                <span class="range-zone zone-safe" style="left: 10%; width: 40%; border-radius: 0;"></span>
+                <span class="range-zone zone-warn" style="left: 50%; width: 16.7%;"></span>
+                <span class="range-zone zone-danger zone-danger-right" style="left: 66.7%;"></span>
+                {% if pp_marker_pct is not None %}
+                <span class="range-marker" style="left: {{ pp_marker_pct }}%;"></span>
                 {% endif %}
             </span>
-            <span class="kpi-note">Safe ≥95% · Danger &lt;92%</span>
+            <span class="kpi-note">Optimal 30–50 mmHg</span>
         </div>
 
         <div class="kpi-cell">
             <span class="kpi-top">
                 <span class="kpi-label">Prescription adherence</span>
-                <span class="kpi-state {% if adherence_rate < 70 %}is-danger{% elif adherence_rate < 85 %}is-warn{% else %}is-normal{% endif %}">
+                <span class="pill {% if adherence_rate < 70 %}neg{% elif adherence_rate < 85 %}warn{% else %}pos{% endif %}">
                     {% if adherence_rate >= 85 %}On target{% elif adherence_rate >= 70 %}Below target{% else %}Low{% endif %}
                 </span>
             </span>
@@ -105,68 +119,121 @@
             <div class="progress-track" style="margin: 4px 0 2px;">
                 <div class="progress-fill {% if adherence_rate >= 85 %}is-complete{% endif %}" style="width: {{ adherence_rate }}%;"></div>
             </div>
-            <span class="kpi-note">{{ medications|length }} active regimen{{ medications|length|pluralize }} · Target ≥85%</span>
+            <span class="kpi-note">{{ medications|length }} regimen{{ medications|length|pluralize }} · Target ≥85%</span>
         </div>
     </div>
 
-    <!-- Interactive Longitudinal Multi-Metric Chart -->
-    <section class="panel" data-telemetry-deck data-chart-source="reportVitalsChartData" data-initial-metric="bp">
-        {{ vitals_chart_data|json_script:"reportVitalsChartData" }}
-
-        <div class="panel-head">
-            <div>
-                <h2 data-chart-title>Blood pressure trajectory</h2>
-                <p class="panel-sub" data-chart-sub>Safe &lt;120/80 · Elevated 120–129 · Danger ≥140/90 mmHg</p>
-            </div>
-            <div class="report-chart-controls no-print">
-                <div class="metric-switch" role="tablist" aria-label="Select chart metric">
-                    <button type="button" role="tab" data-vital-key="bp" aria-selected="true">BP</button>
-                    <button type="button" role="tab" data-vital-key="hr" aria-selected="false">Heart rate</button>
-                    <button type="button" role="tab" data-vital-key="spo2" aria-selected="false">SpO₂</button>
-                    <button type="button" role="tab" data-vital-key="temp" aria-selected="false">Temp</button>
-                    <button type="button" role="tab" data-vital-key="weight" aria-selected="false">Weight</button>
-                </div>
-                <div class="chart-legend-slot" data-chart-legend></div>
-            </div>
-        </div>
-
-        <div class="chart-box chart" data-chart-target>
-            {% if not trend_readings %}
-            <div class="empty">Record vital readings on the dashboard to populate longitudinal graphs.</div>
-            {% endif %}
-        </div>
-    </section>
-
-    <!-- Adherence & BMI Balanced Split Row -->
+    <!-- Primary Analytical Row: Session Risk Distribution (6 cols) + Min-Mean-Max Clinical Spread (6 cols) -->
     <div class="app-grid">
         <section class="panel span-6">
             <div class="panel-head">
                 <div>
-                    <h2>Medication adherence</h2>
-                    <p class="panel-sub">Active prescriptions and recorded compliance</p>
+                    <h2>Session risk distribution</h2>
+                    <p class="panel-sub">Share of readings across clinical threshold zones</p>
                 </div>
-                <span class="panel-meta num">{{ adherence_rate }}% logged</span>
+                <span class="panel-meta num">{{ total_readings }} total</span>
             </div>
 
-            <div class="progress-track" style="margin-bottom: 14px;">
-                <div class="progress-fill {% if adherence_rate >= 85 %}is-complete{% endif %}" style="{{ adherence_style }}"></div>
+            {% if total_readings > 0 %}
+            <div class="risk-stacked-bar" role="img" aria-label="Session distribution across clinical risk zones">
+                {% for r in risk_distribution %}
+                {% if r.count > 0 %}
+                <span class="risk-seg seg-{{ r.key }}" style="width: {{ r.pct }}%;" title="{{ r.label }}: {{ r.count }} ({{ r.pct }}%)"></span>
+                {% endif %}
+                {% endfor %}
             </div>
 
-            {% if medications %}
-            <ul class="regimen-list">
-                {% for m in medications %}
-                <li class="regimen-row">
-                    <div>
-                        <span class="cell-primary">{{ m.medication }}</span>
-                        <span class="cell-sub">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %}</span>
+            <ul class="risk-breakdown-list">
+                {% for r in risk_distribution %}
+                <li class="risk-row">
+                    <div class="risk-label-col">
+                        <span class="risk-dot seg-{{ r.key }}" aria-hidden="true"></span>
+                        <div>
+                            <span class="cell-primary">{{ r.label }}</span>
+                            <span class="cell-sub">{{ r.criteria }}</span>
+                        </div>
                     </div>
-                    <span class="pill {% if m.status == 'active' %}pos{% endif %}">{{ m.status|title }}</span>
+                    <div class="risk-num-col num">
+                        <span class="cell-primary">{{ r.count }}</span>
+                        <span class="cell-sub">{{ r.pct }}%</span>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
             {% else %}
-            <div class="empty">No active prescriptions recorded.</div>
+            <div class="empty">No readings in {{ range_label|lower }} to classify.</div>
             {% endif %}
+        </section>
+
+        <section class="panel span-6">
+            <div class="panel-head">
+                <div>
+                    <h2>Min · mean · max clinical spread</h2>
+                    <p class="panel-sub">Recorded variability band (dark span) and mean tick vs. danger limits</p>
+                </div>
+            </div>
+
+            <ul class="spread-list">
+                {% for s in vital_spreads %}
+                <li class="spread-row">
+                    <div class="spread-head">
+                        <span class="cell-primary">{{ s.name }}</span>
+                        <span class="spread-figures num">
+                            {% if s.has_data %}
+                                <span class="cell-muted">{{ s.min_str }}</span>
+                                <span class="spread-sep">–</span>
+                                <strong>{{ s.avg_str }}</strong>
+                                <span class="spread-sep">–</span>
+                                <span class="cell-muted">{{ s.max_str }} {{ s.unit }}</span>
+                            {% else %}
+                                <span class="cell-muted">No data</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="range-bar state-{{ s.state }}" aria-hidden="true">
+                        {% if s.inverse_spo2 %}
+                            <span class="range-zone zone-danger zone-danger-left" style="width: 46.7%;"></span>
+                            <span class="range-zone zone-warn" style="left: 46.7%; width: 20%;"></span>
+                            <span class="range-zone zone-safe" style="left: 66.7%; right: 0; border-radius: 0 999px 999px 0;"></span>
+                        {% elif s.key == "weight" %}
+                            <span class="range-zone zone-safe" style="left: 0; right: 0;"></span>
+                        {% else %}
+                            <span class="range-zone zone-danger zone-danger-left" style="width: {{ s.danger_low_end }}%;"></span>
+                            <span class="range-zone zone-safe" style="left: {{ s.danger_low_end }}%; right: calc(100% - {{ s.warn_start }}%); border-radius: 0;"></span>
+                            <span class="range-zone zone-warn" style="left: {{ s.warn_start }}%; width: calc({{ s.danger_start }}% - {{ s.warn_start }}%);"></span>
+                            <span class="range-zone zone-danger zone-danger-right" style="left: {{ s.danger_start }}%;"></span>
+                        {% endif %}
+                        {% if s.has_data %}
+                            <span class="spread-span-band is-{{ s.state }}" style="left: {{ s.min_pct }}%; width: {{ s.span_pct }}%;"></span>
+                            <span class="spread-mean-tick" style="left: {{ s.avg_pct }}%;"></span>
+                        {% endif %}
+                    </div>
+                    <div class="spread-foot">
+                        <span class="cell-muted">{{ s.limit_note }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+
+    <!-- Secondary Row: Per-Regimen Adherence Bullet Chart (6 cols) + BMI Assessment (6 cols) -->
+    <div class="app-grid">
+        <section class="panel span-6">
+            <div class="panel-head">
+                <div>
+                    <h2>Regimen compliance vs. 85% target</h2>
+                    <p class="panel-sub">Vertical tick marks the 85% clinical adherence goal per prescription</p>
+                </div>
+                <span class="panel-meta num">{{ adherence_rate }}% overall</span>
+            </div>
+
+            {{ med_compliance_bullet|json_script:"patientComplianceBulletData" }}
+            <div class="chart-box" data-bullet-chart="patientComplianceBulletData">
+                {% if not medications %}
+                <div class="empty">No active prescriptions recorded.</div>
+                {% endif %}
+            </div>
         </section>
 
         <section class="panel span-6">
@@ -204,17 +271,17 @@
             </div>
 
             <p class="clinical-note-box">
-                Daily biometric tracking supports early detection of hypertensive trends and medication response.
+                Print or export CSV to share complete hemodynamics, session risk distribution, and regimen compliance with your physician.
             </p>
         </section>
     </div>
 
-    <!-- Tabular Audit Log -->
+    <!-- Full Clinical Audit Table (Includes Notes column omitted from compact Dashboard preview) -->
     <section class="panel">
         <div class="panel-head">
             <div>
-                <h2>Telemetry data log</h2>
-                <p class="panel-sub">Sessions included in this report</p>
+                <h2>Complete telemetry audit log</h2>
+                <p class="panel-sub">All recorded sessions in {{ range_label|lower }}</p>
             </div>
             <span class="panel-meta num">{{ trend_readings|length }} reading{{ trend_readings|length|pluralize }}</span>
         </div>
@@ -229,6 +296,7 @@
                         <th class="n">Temp</th>
                         <th class="n">Weight</th>
                         <th>Classification</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -245,10 +313,11 @@
                                 {{ v.monitoring_status|default:"Normal" }}
                             </span>
                         </td>
+                        <td class="cell-muted truncate">{{ v.patient_notes|default:"–" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="cell-muted">No records found.</td>
+                        <td colspan="8" class="cell-muted">No records found for this timeframe.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -258,7 +327,7 @@
 
     {% elif is_doctor %}
     <!-- =========================================================
-         DOCTOR COHORT REPORT
+         DOCTOR COHORT ANALYTICS REPORT
          ========================================================= -->
     <div class="page-head">
         <div class="page-title-group">
@@ -273,7 +342,7 @@
             </p>
         </div>
         <div class="page-actions no-print">
-            <a href="{% url 'home:home' %}" class="btn">Directory</a>
+            <a href="?risk={{ risk_filter }}&export=csv" class="btn">Export CSV</a>
             <button type="button" onclick="window.print()" class="btn primary">Print report</button>
         </div>
     </div>
@@ -286,7 +355,7 @@
         </div>
         <div class="kpi-cell">
             <span class="kpi-label">Controlled telemetry</span>
-            <span class="kpi-value">{{ normal_patients|length }}</span>
+            <span class="kpi-value">{{ controlled_count }}</span>
             <span class="kpi-note">{{ controlled_pct }}% stable thresholds</span>
         </div>
         <div class="kpi-cell {% if triage_alerts %}state-danger{% endif %}">
@@ -301,13 +370,72 @@
         </div>
     </div>
 
+    <!-- Cohort Risk Stratification + Per-Patient Adherence Comparison -->
+    <div class="app-grid">
+        <section class="panel span-6">
+            <div class="panel-head">
+                <div>
+                    <h2>Cohort risk stratification</h2>
+                    <p class="panel-sub">Distribution of connected patients by latest clinical severity</p>
+                </div>
+                <span class="panel-meta num">{{ total_cohort }} total</span>
+            </div>
+
+            {% if total_cohort > 0 %}
+            <div class="risk-stacked-bar" role="img" aria-label="Cohort risk distribution">
+                {% for r in cohort_risk_breakdown %}
+                {% if r.count > 0 %}
+                <span class="risk-seg seg-{% if r.key == 'stable' %}normal{% elif r.key == 'high' %}danger{% else %}elevated{% endif %}" style="width: {{ r.pct }}%;"></span>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <ul class="risk-breakdown-list">
+                {% for r in cohort_risk_breakdown %}
+                <li class="risk-row">
+                    <div class="risk-label-col">
+                        <span class="risk-dot seg-{% if r.key == 'stable' %}normal{% elif r.key == 'high' %}danger{% else %}elevated{% endif %}" aria-hidden="true"></span>
+                        <div>
+                            <span class="cell-primary">{{ r.label }}</span>
+                            <span class="cell-sub">{{ r.criteria }}</span>
+                        </div>
+                    </div>
+                    <div class="risk-num-col num">
+                        <span class="cell-primary">{{ r.count }}</span>
+                        <span class="cell-sub">{{ r.pct }}%</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty">Connect patients from the Dashboard to view cohort stratification.</div>
+            {% endif %}
+        </section>
+
+        <section class="panel span-6">
+            <div class="panel-head">
+                <div>
+                    <h2>Patient adherence vs. 85% target</h2>
+                    <p class="panel-sub">Logged prescription compliance across your roster</p>
+                </div>
+            </div>
+            {{ cohort_adherence_bullet|json_script:"cohortComplianceBulletData" }}
+            <div class="chart-box" data-bullet-chart="cohortComplianceBulletData"></div>
+        </section>
+    </div>
+
+    <!-- Filterable Cohort Risk Triage Table -->
     <section class="panel">
         <div class="panel-head">
             <div>
                 <h2>Cohort risk triage board</h2>
                 <p class="panel-sub">High-priority patients pinned to top</p>
             </div>
-            <span class="panel-meta num">{{ total_cohort }} patient{{ total_cohort|pluralize }}</span>
+            <div class="range-segmented no-print" role="navigation" aria-label="Filter cohort by risk">
+                <a href="?risk=all" class="seg-link {% if risk_filter == 'all' %}is-active{% endif %}">All ({{ total_cohort }})</a>
+                <a href="?risk=high" class="seg-link {% if risk_filter == 'high' %}is-active{% endif %}">High priority ({{ triage_alerts|length }})</a>
+                <a href="?risk=elevated" class="seg-link {% if risk_filter == 'elevated' %}is-active{% endif %}">Elevated ({{ elevated_patients|length }})</a>
+                <a href="?risk=stable" class="seg-link {% if risk_filter == 'stable' %}is-active{% endif %}">Stable ({{ stable_patients|length }})</a>
+            </div>
         </div>
 
         <div class="table-wrap">
@@ -325,8 +453,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in triage_alerts %}
-                    <tr class="is-alert">
+                    {% for p in filtered_cohort %}
+                    <tr class="{% if p.triage_key == 'high' %}is-alert{% endif %}">
                         <td>
                             <span class="cell-primary">{{ p.full_name }}</span>
                             <span class="cell-sub mono-id">@{{ p.user.username }}</span>
@@ -335,7 +463,7 @@
                             {% if p.latest_vital and p.latest_vital.systolic %}
                                 <span class="cell-primary">{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }}</span>
                                 {% if p.bp_marker_pct is not None %}
-                                <span class="mini-range is-danger" aria-hidden="true">
+                                <span class="mini-range {% if p.triage_key == 'high' %}is-danger{% elif p.triage_key == 'elevated' %}is-warn{% endif %}" aria-hidden="true">
                                     <span class="mini-range-danger"></span>
                                     <span class="mini-range-dot" style="left: {{ p.bp_marker_pct }}%;"></span>
                                 </span>
@@ -345,41 +473,15 @@
                         <td class="n">{% if p.latest_vital and p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
                         <td class="n">{% if p.latest_vital and p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
                         <td class="n">{{ p.total_meds }}</td>
-                        <td><span class="pill neg">{{ p.triage_level }}</span></td>
+                        <td><span class="pill {% if p.triage_key == 'high' %}neg{% elif p.triage_key == 'elevated' %}warn{% else %}pos{% endif %}">{{ p.triage_level }}</span></td>
                         <td class="n num cell-muted">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
-                        <td class="n"><a href="?patient_id={{ p.id }}" class="btn btn-sm">Inspect</a></td>
+                        <td class="n"><a href="?risk={{ risk_filter }}&patient_id={{ p.id }}" class="btn btn-sm">Inspect</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="cell-muted">No patients match this risk filter.</td>
                     </tr>
                     {% endfor %}
-                    {% for p in normal_patients %}
-                    <tr>
-                        <td>
-                            <span class="cell-primary">{{ p.full_name }}</span>
-                            <span class="cell-sub mono-id">@{{ p.user.username }}</span>
-                        </td>
-                        <td class="n">
-                            {% if p.latest_vital and p.latest_vital.systolic %}
-                                <span class="cell-primary">{{ p.latest_vital.systolic }}/{{ p.latest_vital.diastolic }}</span>
-                                {% if p.bp_marker_pct is not None %}
-                                <span class="mini-range {% if p.triage_badge == 'badge-warning' %}is-warn{% endif %}" aria-hidden="true">
-                                    <span class="mini-range-danger"></span>
-                                    <span class="mini-range-dot" style="left: {{ p.bp_marker_pct }}%;"></span>
-                                </span>
-                                {% endif %}
-                            {% else %}–{% endif %}
-                        </td>
-                        <td class="n">{% if p.latest_vital and p.latest_vital.heart_rate %}{{ p.latest_vital.heart_rate }} bpm{% else %}–{% endif %}</td>
-                        <td class="n">{% if p.latest_vital and p.latest_vital.oxygen_saturation %}{{ p.latest_vital.oxygen_saturation }}%{% else %}–{% endif %}</td>
-                        <td class="n">{{ p.total_meds }}</td>
-                        <td><span class="pill {% if p.triage_badge == 'badge-warning' %}warn{% else %}pos{% endif %}">{{ p.triage_level }}</span></td>
-                        <td class="n num cell-muted">{% if p.latest_vital %}{{ p.latest_vital.recorded_at|date:"M d, H:i" }}{% else %}–{% endif %}</td>
-                        <td class="n"><a href="?patient_id={{ p.id }}" class="btn btn-sm">Inspect</a></td>
-                    </tr>
-                    {% endfor %}
-                    {% if not patients %}
-                    <tr>
-                        <td colspan="8" class="cell-muted">No connected patients yet. Connect patients from the Dashboard.</td>
-                    </tr>
-                    {% endif %}
                 </tbody>
             </table>
         </div>
@@ -405,7 +507,7 @@
             <button type="button" role="tab" class="kpi-cell state-{{ g.state }}" data-vital-key="{{ g.key }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
                 <span class="kpi-top">
                     <span class="kpi-label">{{ g.name }}</span>
-                    <span class="kpi-state is-{{ g.state }}">{{ g.state_label }}</span>
+                    <span class="pill {% if g.state == 'danger' %}neg{% elif g.state == 'warn' %}warn{% elif g.state == 'normal' %}pos{% endif %}">{{ g.state_label }}</span>
                 </span>
                 <span class="kpi-value">{{ g.value }}{% if g.value != "–" %}<span class="kpi-unit">{{ g.unit }}</span>{% endif %}</span>
                 <span class="range-bar state-{{ g.state }}" aria-hidden="true">
@@ -430,7 +532,7 @@
             {% endfor %}
         </div>
 
-        <div style="margin-top: 18px;">
+        <div style="margin-top: 20px;">
             <div class="panel-head" style="margin-bottom: 8px;">
                 <div>
                     <h3 class="sub-heading" data-chart-title>Blood pressure trajectory</h3>
@@ -439,37 +541,6 @@
                 <div class="chart-legend-slot" data-chart-legend></div>
             </div>
             <div class="chart-box chart" data-chart-target></div>
-        </div>
-
-        <div class="table-wrap" style="margin-top: 18px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date and time</th>
-                        <th class="n">Blood pressure</th>
-                        <th class="n">Heart rate</th>
-                        <th class="n">SpO₂</th>
-                        <th class="n">Temp</th>
-                        <th class="n">Weight</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for v in detail_vitals %}
-                    <tr>
-                        <td class="num">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
-                        <td class="n cell-primary">{% if v.systolic %}{{ v.systolic }}/{{ v.diastolic|default:"–" }} mmHg{% else %}–{% endif %}</td>
-                        <td class="n">{{ v.heart_rate|default:"–" }} bpm</td>
-                        <td class="n">{{ v.oxygen_saturation|default:"–" }}%</td>
-                        <td class="n">{{ v.temperature_celsius|default:"–" }}°C</td>
-                        <td class="n">{{ v.weight_kg|default:"–" }} kg</td>
-                        <td><span class="pill {% if v.monitoring_status and 'Stage' in v.monitoring_status %}neg{% elif v.monitoring_status and 'Elevated' in v.monitoring_status %}warn{% else %}pos{% endif %}">{{ v.monitoring_status|default:"Normal" }}</span></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="7" class="cell-muted">No vital sign records found.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
     </section>
     {% endif %}

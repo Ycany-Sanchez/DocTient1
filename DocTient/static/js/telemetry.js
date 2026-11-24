@@ -493,9 +493,34 @@
     });
   }
 
+  function initReportAnalytics() {
+    if (!window.Charts) return;
+    document.querySelectorAll('[data-bullet-chart]').forEach((el) => {
+      const srcId = el.getAttribute('data-bullet-chart');
+      const dataEl = srcId ? document.getElementById(srcId) : null;
+      if (!dataEl) return;
+      let rows;
+      try {
+        rows = JSON.parse(dataEl.textContent);
+      } catch {
+        return;
+      }
+      if (!Array.isArray(rows) || !rows.length) {
+        el.innerHTML = '<div class="empty">No compliance records logged yet.</div>';
+        return;
+      }
+      window.Charts.bullet(el, rows, {
+        format: window.Charts.fmt.pct(0),
+        max: 1.0,
+        higherIsBetter: true,
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initTelemetryDecks();
+    initReportAnalytics();
     initAjaxMedications();
     initVitalLivePreview();
     initVitalDrawer();

@@ -434,13 +434,16 @@
   }
   // Share against a target: one row per part, the current share as a bar and a 1px tick at the target,
   // so drift reads at a glance (never two stacked bars to compare).
-  function bullet(el, rows, { format = fmt.pct(1), max = Math.max(...rows.map((r) => Math.max(r.value, r.target))) * 1.15 } = {}) {
+  function bullet(el, rows, { format = fmt.pct(1), max = Math.max(...rows.map((r) => Math.max(r.value, r.target))) * 1.15, higherIsBetter = false } = {}) {
     el.innerHTML = '';
     const list = document.createElement('ul'); list.style.cssText = 'list-style:none;margin:0;padding:0;display:grid;gap:12px;font-variant-numeric:tabular-nums';
     for (const r of rows) {
       const drift = r.value - r.target;
+      const driftColor = higherIsBetter
+        ? (drift >= 0 ? 'var(--positive,#156e44)' : 'var(--negative,#c4242a)')
+        : (Math.abs(drift) >= (r.tolerance ?? 0.02) ? 'var(--negative,#c4242a)' : 'var(--muted,#5f6368)');
       const li = document.createElement('li'); li.style.cssText = 'display:grid;grid-template-columns:minmax(90px,30%) 1fr auto;align-items:center;gap:12px';
-      li.innerHTML = `<span>${r.label}</span><span style="position:relative;height:10px;background:var(--rule,#eceeef);border-radius:2px"><span style="position:absolute;inset:0 auto 0 0;width:${(r.value / max) * 100}%;background:var(--chart-1,#2f6fdf);border-radius:2px"></span><span style="position:absolute;top:-4px;bottom:-4px;left:${(r.target / max) * 100}%;width:2px;margin-left:-1px;background:var(--text,#111)"></span></span><span><b style="font-weight:500">${format(r.value)}</b> <span style="color:${Math.abs(drift) >= (r.tolerance ?? 0.02) ? 'var(--negative,#c4242a)' : 'var(--muted,#5f6368)'}">${drift >= 0 ? '+' : '−'}${format(Math.abs(drift))} vs ${format(r.target)}</span></span>`;
+      li.innerHTML = `<span>${r.label}</span><span style="position:relative;height:10px;background:var(--rule,#eceeef);border-radius:2px"><span style="position:absolute;inset:0 auto 0 0;width:${(r.value / max) * 100}%;background:var(--chart-1,#2f6fdf);border-radius:2px"></span><span style="position:absolute;top:-4px;bottom:-4px;left:${(r.target / max) * 100}%;width:2px;margin-left:-1px;background:var(--text,#111)"></span></span><span><b style="font-weight:500">${format(r.value)}</b> <span style="color:${driftColor}">${drift >= 0 ? '+' : '−'}${format(Math.abs(drift))} vs ${format(r.target)}</span></span>`;
       li.setAttribute('aria-label', `${r.label}: ${format(r.value)}, target ${format(r.target)}`);
       list.appendChild(li);
     }
