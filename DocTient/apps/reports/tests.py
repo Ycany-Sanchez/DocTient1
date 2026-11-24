@@ -80,3 +80,30 @@ class ReportsViewTests(TestCase):
         self.assertContains(response, "Patient Cohort Triage Overview")
         self.assertContains(response, "Reports Patient")
 
+    def test_vitals_join_view_renders_with_inner_join(self):
+        self.client.login(username="rep_doctor", password="Password123!")
+        response = self.client.get(reverse("reports:vitals_join"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Reports Patient")
+        self.assertContains(response, "120/80")
+        self.assertIn("INNER JOIN", response.context["generated_sql"])
+        self.assertIn("patient_profiles", response.context["generated_sql"])
+
+    def test_patients_subquery_view_filters_patients_without_vitals(self):
+        unmonitored_user = User.objects.create_user(
+            username="no_vitals_patient", password="Password123!"
+        )
+        PatientProfile.objects.create(
+            user=unmonitored_user,
+            full_name="Unmonitored Patient",
+        )
+        self.client.login(username="rep_doctor", password="Password123!")
+        response = self.client.get(reverse("reports:patients_subquery"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Reports Patient")
+        self.assertNotContains(response, "Unmonitored Patient")
+        self.assertEqual(response.context["matched_count"], 1)
+        self.assertEqual(response.context["total_patients"], 2)
+        self.assertIn("IN (SELECT", response.context["generated_sql"])
+
+

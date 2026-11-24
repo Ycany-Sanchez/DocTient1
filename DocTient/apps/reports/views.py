@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Subquery
 from django.shortcuts import redirect, render
 
 from apps.clinic.models import (
@@ -285,4 +286,68 @@ def reports_view(request):
         "detail_connection": detail_connection,
         "doctor_notes": doctor_notes,
     })
+
+
+@login_required
+def patient_vitals_join_view(request):
+    """
+    SQL JOIN Implementation (Django ORM select_related):
+    Retrieves VitalSign records joined with their related PatientProfile records
+    using an SQL INNER JOIN on vital_signs.patient_id = patient_profiles.id.
+    """
+    vitals = VitalSign.objects.select_related("patient").all()
+    generated_sql = str(vitals.query)
+
+    vitals_list = list(vitals)
+    unique_patient_count = len({v.patient_id for v in vitals_list})
+    alert_count = sum(
+        1
+        for v in vitals_list
+        if (v.systolic and v.systolic >= 140)
+        or (v.diastolic and v.diastolic >= 90)
+        or (v.oxygen_saturation and float(v.oxygen_saturation) < 92)
+    )
+
+    return render(
+        request,
+        "reports/vitals_join.html",
+        {
+            "vitals": vitals_list,
+            "total_records": len(vitals_list),
+            "unique_patient_count": unique_patient_count,
+            "alert_count": alert_count,
+            "generated_sql": generated_sql,
+        },
+    )
+
+
+@login_required
+def patients_with_vitals_subquery_view(request):
+    """
+    SQL SUBQUERY Implementation (Django ORM Subquery):
+    Inner query selects patient_id values from vital_signs.
+    Outer query filters PatientProfile records whose id appears in the inner query.
+    """
+    vital_patient_ids = VitalSign.objects.values("patient_id")
+    patients = PatientProfile.objects.filter(
+        id__in=Subquery(vital_patient_ids)
+    ).order_by("id")
+    generated_sql = str(patients.query)
+
+    patients_list = list(patients)
+    total_patients = PatientProfile.objects.count()
+    excluded_patients = max(0, total_patients - len(patients_list))
+
+    return render(
+        request,
+        "reports/patients_subquery.html",
+        {
+            "patients": patients_list,
+            "matched_count": len(patients_list),
+            "total_patients": total_patients,
+            "excluded_patients": excluded_patients,
+            "generated_sql": generated_sql,
+        },
+    )
+
 

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Vitals Registry (SQL JOIN) - DocTient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reports/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    {% include "reports/_subnav.html" %}
+
+    <div class="medix-hero-banner reports-hero">
+        <div class="hero-split">
+            <div class="hero-left">
+                <span class="medix-badge-light">SQL JOIN · Django ORM select_related()</span>
+                <h1 class="hero-title">Patient Vital Signs Registry</h1>
+                <p class="hero-desc">
+                    Retrieves clinical telemetry from <strong>vital_signs</strong> joined with patient identity details
+                    from <strong>patient_profiles</strong> via a single PostgreSQL <code>INNER JOIN</code> on
+                    <code>vital_signs.patient_id = patient_profiles.id</code>.
+                </p>
+            </div>
+            <div class="hero-right">
+                <div class="frosted-float-card">
+                    <span class="float-label">Joined Telemetry Records</span>
+                    <div class="float-metric-num">{{ total_records }}</div>
+                    <p class="float-desc">
+                        Combined from <strong>vital_signs</strong> &amp; <strong>patient_profiles</strong> (1:M relationship).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="medix-reports-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="rep-card">
+            <span class="rep-label">Total Joined Readings</span>
+            <div class="rep-val">{{ total_records }}</div>
+            <small class="rep-sub">Rows returned by INNER JOIN</small>
+        </div>
+        <div class="rep-card">
+            <span class="rep-label">Unique Patients Represented</span>
+            <div class="rep-val">{{ unique_patient_count }}</div>
+            <small class="rep-sub">Linked via patient_id FK</small>
+        </div>
+        <div class="rep-card">
+            <span class="rep-label">Clinical Triage Alerts</span>
+            <div class="rep-val">{{ alert_count }}</div>
+            <small class="rep-sub">BP &ge;140/90 or SpO₂ &lt;92%</small>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-header-row">
+            <div>
+                <span class="card-pill-tag">Two-Table Relational Result</span>
+                <h3 style="font-size: 1.25rem;">Vital Signs Joined with Patient Profiles</h3>
+            </div>
+            <span class="recorded-at-badge">vital_signs ⋈ patient_profiles</span>
+        </div>
+
+        <div class="table-wrap" style="margin-top: 14px;">
+            <table class="vitals-table">
+                <thead>
+                    <tr>
+                        <th>Vital ID</th>
+                        <th>Patient Name</th>
+                        <th>Gender</th>
+                        <th>Contact No.</th>
+                        <th>Blood Pressure</th>
+                        <th>Heart Rate</th>
+                        <th>SpO₂</th>
+                        <th>Temp</th>
+                        <th>Status</th>
+                        <th>Recorded At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vitals %}
+                    <tr>
+                        <td>#{{ v.id }}</td>
+                        <td><strong>{{ v.patient.full_name }}</strong></td>
+                        <td>{{ v.patient.gender|default:"–" }}</td>
+                        <td>{{ v.patient.contact_no|default:"–" }}</td>
+                        <td>
+                            {% if v.systolic %}
+                                <strong>{{ v.systolic }}/{{ v.diastolic|default:"–" }} mmHg</strong>
+                            {% else %}
+                                –
+                            {% endif %}
+                        </td>
+                        <td>{% if v.heart_rate %}{{ v.heart_rate }} bpm{% else %}–{% endif %}</td>
+                        <td>{% if v.oxygen_saturation %}{{ v.oxygen_saturation }}%{% else %}–{% endif %}</td>
+                        <td>{% if v.temperature_celsius %}{{ v.temperature_celsius }}°C{% else %}–{% endif %}</td>
+                        <td>
+                            <span class="badge {% if v.monitoring_status and 'Stage' in v.monitoring_status %}badge-danger{% elif v.monitoring_status and 'Elevated' in v.monitoring_status %}badge-warning{% else %}badge-success{% endif %}">
+                                {{ v.monitoring_status|default:"Normal" }}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap;">{{ v.recorded_at|date:"M d, Y · H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" style="color: var(--text-muted); text-align: center; padding: 24px;">
+                            No vital sign records found in Supabase.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="sql-inspect-card">
+        <h3>Django ORM &amp; Generated PostgreSQL Query (JOIN Verification)</h3>
+        <div class="sql-inspect-meta">
+            <span class="sql-meta-pill">Main Table: patient_profiles (PK: id)</span>
+            <span class="sql-meta-pill">Related Table: vital_signs (FK: patient_id)</span>
+            <span class="sql-meta-pill">Relationship: One-to-Many (1:M)</span>
+        </div>
+
+        <div class="sql-code-label">Django ORM Query</div>
+        <pre class="sql-code-block">vitals = VitalSign.objects.select_related("patient").all()</pre>
+
+        <div class="sql-code-label">Generated SQL (print(vitals.query))</div>
+        <pre class="sql-code-block">{{ generated_sql }}</pre>
+    </div>
+</div>
+{% endblock %}
