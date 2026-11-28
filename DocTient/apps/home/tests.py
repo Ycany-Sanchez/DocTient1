@@ -214,3 +214,24 @@ class DocTientDashboardTests(TestCase):
         self.assertEqual(med.frequency, "Twice daily")
         self.assertEqual(med.scheduled_time.strftime("%H:%M"), "20:00")
 
+    def test_critical_vital_sends_alert_email_when_enabled(self):
+        from django.core import mail
+        from apps.user_settings.models import UserSettings
+
+        self.doctor_user.email = "doctor@example.com"
+        self.doctor_user.save()
+        UserSettings.objects.create(user=self.patient_user, email_notifications=True)
+        UserSettings.objects.create(user=self.doctor_user, email_notifications=True)
+
+        self.client.login(username="test_patient", password="Password123!")
+        self.client.post(reverse("home:home"), {
+            "action": "log_vital",
+            "systolic": "155",
+            "diastolic": "96",
+            "heart_rate": "88",
+            "oxygen_saturation": "97.0",
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Stage 2 HTN", mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, ["doctor@example.com"])
+

@@ -117,3 +117,9 @@ LOGIN_URL = "login:login"
 LOGIN_REDIRECT_URL = "home:home"
 LOGOUT_REDIRECT_URL = "login:login"
 
+EMAIL_BACKEND = os.environ.get(
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "alerts@doctient.local")
+

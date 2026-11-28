@@ -2,6 +2,7 @@ from datetime import date, time
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -15,6 +16,7 @@ from apps.clinic.models import (
     MedicationLog,
     DoctorNote,
 )
+from apps.user_settings.models import UserSettings
 
 
 def _safe_int(val):
@@ -281,6 +283,40 @@ def build_vitals_chart_payload(vitals_list):
     }
 
 
+def _dispatch_critical_vital_alert(patient, status, systolic, diastolic, hr, spo2):
+    """Sends a critical telemetry alert email to connected doctors when notifications are enabled."""
+    pat_settings = UserSettings.objects.filter(user=patient.user).first()
+    if pat_settings and not pat_settings.email_notifications:
+        return
+
+    recipient_emails = []
+    for conn in DoctorPatientConnection.objects.filter(patient=patient).select_related("doctor__user"):
+        doc_user = conn.doctor.user
+        doc_settings = UserSettings.objects.filter(user=doc_user).first()
+        if (doc_settings is None or doc_settings.email_notifications) and doc_user.email:
+            recipient_emails.append(doc_user.email)
+
+    if not recipient_emails:
+        return
+
+    bp_part = f"{systolic}/{diastolic} mmHg" if systolic and diastolic else "N/A"
+    hr_part = f"{hr} bpm" if hr is not None else "N/A"
+    spo2_part = f"{spo2}%" if spo2 is not None else "N/A"
+    send_mail(
+        subject=f"[DocTient Alert] {patient.full_name} — {status}",
+        message=(
+            f"Critical telemetry reading logged for {patient.full_name} (@{patient.user.username}):\n"
+            f"- Status: {status}\n"
+            f"- Blood Pressure: {bp_part}\n"
+            f"- Heart Rate: {hr_part}\n"
+            f"- SpO2: {spo2_part}\n"
+        ),
+        from_email=None,
+        recipient_list=recipient_emails,
+        fail_silently=True,
+    )
+
+
 @login_required
 def home_view(request):
     doctor = DoctorProfile.objects.filter(user=request.user).first()
@@ -323,7 +359,7 @@ def home_view(request):
                 weight = _safe_decimal(request.POST.get("weight_kg"))
                 notes = (request.POST.get("patient_notes") or "").strip()
 
-                status, _ = _evaluate_vitals(systolic, diastolic, hr, spo2)
+                status, badge_cls = _evaluate_vitals(systolic, diastolic, hr, spo2)
 
                 VitalSign.objects.create(
                     patient=patient,
@@ -337,7 +373,14 @@ def home_view(request):
                     patient_notes=notes,
                     recorded_at=timezone.now(),
                 )
-                messages.success(request, "Vital signs recorded successfully.")
+                if badge_cls == "badge-danger":
+                    _dispatch_critical_vital_alert(patient, status, systolic, diastolic, hr, spo2)
+                    messages.warning(
+                        request,
+                        f"Critical reading ({status}) logged. Please rest and contact your attending physician.",
+                    )
+                else:
+                    messages.success(request, "Vital signs recorded successfully.")
                 return redirect("home:home")
 
             # 2. Patient marks or toggles medication taken (supports zero-refresh AJAX + plain POST fallback)
