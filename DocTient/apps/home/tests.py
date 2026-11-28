@@ -185,3 +185,32 @@ class DocTientDashboardTests(TestCase):
         resp2 = self.client.get(reverse("home:home") + f"?patient_id={self.patient_profile.id}")
         self.assertContains(resp2, "Note specifically for Test Patient")
 
+    def test_doctor_can_prescribe_with_schedule_and_edit_medication(self):
+        self.client.login(username="test_doctor", password="Password123!")
+        self.client.post(reverse("home:home"), {
+            "action": "prescribe_medication",
+            "patient_id": str(self.patient_profile.id),
+            "medication": "Amlodipine",
+            "dosage": "5 mg",
+            "frequency": "Once daily",
+            "scheduled_time": "08:00",
+            "start_date": "2026-11-28",
+        })
+        med = Medication.objects.filter(patient=self.patient_profile, medication="Amlodipine").first()
+        self.assertIsNotNone(med)
+        self.assertEqual(med.scheduled_time.strftime("%H:%M"), "08:00")
+        self.assertEqual(str(med.start_date), "2026-11-28")
+
+        self.client.post(reverse("home:home"), {
+            "action": "edit_medication",
+            "patient_id": str(self.patient_profile.id),
+            "medication_id": str(med.id),
+            "dosage": "10 mg",
+            "frequency": "Twice daily",
+            "scheduled_time": "20:00",
+        })
+        med.refresh_from_db()
+        self.assertEqual(med.dosage, "10 mg")
+        self.assertEqual(med.frequency, "Twice daily")
+        self.assertEqual(med.scheduled_time.strftime("%H:%M"), "20:00")
+

@@ -1,3 +1,4 @@
+from datetime import date, time
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -31,6 +32,26 @@ def _safe_decimal(val):
     try:
         return Decimal(str(val).strip())
     except (ValueError, TypeError, Exception):
+        return None
+
+
+def _safe_time(val):
+    raw = (val or "").strip()
+    if not raw:
+        return None
+    try:
+        return time.fromisoformat(raw)
+    except ValueError:
+        return None
+
+
+def _safe_date(val):
+    raw = (val or "").strip()
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
         return None
 
 
@@ -483,11 +504,28 @@ def home_view(request):
                     medication=med_name,
                     dosage=(request.POST.get("dosage") or "").strip(),
                     frequency=(request.POST.get("frequency") or "").strip(),
+                    scheduled_time=_safe_time(request.POST.get("scheduled_time")),
+                    start_date=_safe_date(request.POST.get("start_date")),
+                    end_date=_safe_date(request.POST.get("end_date")),
                     status="active",
                     reminder_active=True,
                 )
                 messages.success(request, f"Prescribed {med_name} to {target_patient.full_name}.")
                 return redirect(f"/home/?patient_id={target_patient.id}")
+
+        # Doctor updates dosage / frequency / scheduled time of an existing medication
+        if action == "edit_medication":
+            target_id = _safe_int(request.POST.get("patient_id"))
+            med_id = _safe_int(request.POST.get("medication_id"))
+            med = Medication.objects.filter(id=med_id).first() if med_id else None
+            if med and (med.doctor == doctor or med.patient.id in connected_ids):
+                med.dosage = (request.POST.get("dosage") or "").strip()
+                med.frequency = (request.POST.get("frequency") or "").strip()
+                if "scheduled_time" in request.POST:
+                    med.scheduled_time = _safe_time(request.POST.get("scheduled_time"))
+                med.save()
+                messages.success(request, f"Updated {med.medication} prescription.")
+            return redirect(f"/home/?patient_id={target_id}" if target_id else "home:home")
 
         # Doctor updates clinical notes and recommendations
         if action == "update_clinical_note":

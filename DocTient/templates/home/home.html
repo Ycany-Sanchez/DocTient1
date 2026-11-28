@@ -193,7 +193,7 @@
                     <li class="med-row {% if m.taken_today %}is-taken{% endif %}" data-med-row>
                         <div class="med-info">
                             <span class="med-name">{{ m.medication }}</span>
-                            <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %}</span>
+                            <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %}{% if m.scheduled_time %} · {{ m.scheduled_time|time:"h:i A" }}{% endif %}</span>
                             {% if m.doctor %}
                             <span class="med-doc">{{ m.doctor.full_name }}</span>
                             {% endif %}
@@ -601,6 +601,16 @@
                             <input type="text" name="frequency" class="input" placeholder="Once daily">
                         </div>
                     </div>
+                    <div class="form-grid-2">
+                        <div class="field">
+                            <label>Scheduled time (optional)</label>
+                            <input type="time" name="scheduled_time" class="input">
+                        </div>
+                        <div class="field">
+                            <label>Start date (optional)</label>
+                            <input type="date" name="start_date" class="input">
+                        </div>
+                    </div>
                     <div>
                         <button type="submit" class="btn primary btn-sm">Issue prescription</button>
                     </div>
@@ -623,7 +633,24 @@
                             <span class="med-name">{{ m.medication }}</span>
                             <span class="pill {% if m.status == 'active' %}pos{% endif %}" data-doc-med-pill>{{ m.status|title }}</span>
                         </div>
-                        <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %} · Prescribed {{ m.created_at|date:"M d, Y" }}</span>
+                        <span class="med-meta">{{ m.dosage }}{% if m.frequency %} · {{ m.frequency }}{% endif %}{% if m.scheduled_time %} · {{ m.scheduled_time|time:"h:i A" }}{% endif %} · Prescribed {{ m.created_at|date:"M d, Y" }}</span>
+                        <details style="margin-top: 6px;">
+                            <summary class="panel-meta" style="cursor: pointer;">Edit dosage / schedule</summary>
+                            <form method="post" class="app-stack" style="margin-top: 8px; gap: 8px;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="edit_medication">
+                                <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                                <input type="hidden" name="medication_id" value="{{ m.id }}">
+                                <div class="form-grid-2">
+                                    <input type="text" name="dosage" class="input" value="{{ m.dosage }}" placeholder="Dosage">
+                                    <input type="text" name="frequency" class="input" value="{{ m.frequency }}" placeholder="Frequency">
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="time" name="scheduled_time" class="input" value="{% if m.scheduled_time %}{{ m.scheduled_time|time:'H:i' }}{% endif %}" style="max-width: 150px;">
+                                    <button type="submit" class="btn btn-sm primary">Save</button>
+                                </div>
+                            </form>
+                        </details>
                     </div>
                     <form method="post" class="js-doc-med-toggle-form">
                         {% csrf_token %}
