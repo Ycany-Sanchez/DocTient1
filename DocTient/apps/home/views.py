@@ -503,6 +503,17 @@ def home_view(request):
                 messages.error(request, f"No patient found with username '{username}'.")
             return redirect("home:home")
 
+        # Doctor removes patient from active roster
+        if action == "remove_patient":
+            target_id = _safe_int(request.POST.get("patient_id"))
+            if target_id:
+                deleted_count, _ = DoctorPatientConnection.objects.filter(
+                    doctor=doctor, patient_id=target_id
+                ).delete()
+                if deleted_count:
+                    messages.info(request, "Removed patient from your active roster.")
+            return redirect("home:home")
+
         # Doctor records vitals for selected patient
         if action == "record_patient_vitals":
             target_id = _safe_int(request.POST.get("patient_id"))

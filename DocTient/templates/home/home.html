@@ -497,7 +497,17 @@
                 <h2>Patient chart · {{ selected_patient.full_name }}</h2>
                 <p class="panel-sub mono-id">@{{ selected_patient.user.username }}</p>
             </div>
-            <a href="{% url 'messages:messages' %}?with={{ selected_patient.user.username }}" class="btn primary btn-sm">Open consultation chat</a>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                {% if selected_patient.is_connected or selected_connection %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="remove_patient">
+                    <input type="hidden" name="patient_id" value="{{ selected_patient.id }}">
+                    <button type="submit" class="btn btn-sm">Remove from roster</button>
+                </form>
+                {% endif %}
+                <a href="{% url 'messages:messages' %}?with={{ selected_patient.user.username }}" class="btn primary btn-sm">Open consultation chat</a>
+            </div>
         </div>
 
         <!-- Selected Patient 5-Vital Danger Strip -->

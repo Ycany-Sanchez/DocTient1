@@ -235,3 +235,21 @@ class DocTientDashboardTests(TestCase):
         self.assertIn("Stage 2 HTN", mail.outbox[0].subject)
         self.assertEqual(mail.outbox[0].to, ["doctor@example.com"])
 
+    def test_doctor_can_remove_patient_from_roster(self):
+        self.assertTrue(
+            DoctorPatientConnection.objects.filter(
+                doctor=self.doctor_profile, patient=self.patient_profile
+            ).exists()
+        )
+        self.client.login(username="test_doctor", password="Password123!")
+        resp = self.client.post(reverse("home:home"), {
+            "action": "remove_patient",
+            "patient_id": str(self.patient_profile.id),
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertFalse(
+            DoctorPatientConnection.objects.filter(
+                doctor=self.doctor_profile, patient=self.patient_profile
+            ).exists()
+        )
+
