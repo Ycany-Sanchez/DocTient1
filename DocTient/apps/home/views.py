@@ -501,7 +501,12 @@ def home_view(request):
                 conn.recommendations = recom
                 conn.save()
                 if obs or recom:
-                    DoctorNote.objects.create(doctor=doctor, observations=obs, recommendations=recom)
+                    DoctorNote.objects.create(
+                        doctor=doctor,
+                        patient=target_patient,
+                        observations=obs,
+                        recommendations=recom,
+                    )
                 messages.success(request, f"Clinical observations updated for {target_patient.full_name}.")
                 return redirect(f"/home/?patient_id={target_patient.id}")
 
@@ -606,7 +611,9 @@ def home_view(request):
                     patient=selected_patient,
                 )
                 selected_chart_data = build_vitals_chart_payload(selected_vitals)
-                recent_notes = list(DoctorNote.objects.filter(doctor=doctor).order_by("-id")[:5])
+                recent_notes = list(
+                    DoctorNote.objects.filter(doctor=doctor, patient=selected_patient).order_by("-created_at", "-id")[:5]
+                )
             else:
                 messages.warning(request, "Add this patient to your list to access their full chart.")
                 selected_patient = None

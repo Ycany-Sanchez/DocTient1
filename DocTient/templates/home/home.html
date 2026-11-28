@@ -666,13 +666,14 @@
 
             {% if recent_notes %}
             <div class="notes-archive">
-                <span class="panel-meta">Recent observations</span>
+                <span class="panel-meta">Recent observations for {{ selected_patient.full_name }}</span>
                 {% for n in recent_notes %}
                 <div class="note-item">
                     <span class="cell-primary">{{ n.observations|truncatechars:120 }}</span>
                     {% if n.recommendations %}
                     <span class="cell-sub">Guidance: {{ n.recommendations|truncatechars:100 }}</span>
                     {% endif %}
+                    <span class="panel-meta num">{{ n.created_at|date:"M d, Y · H:i" }}</span>
                 </div>
                 {% endfor %}
             </div>

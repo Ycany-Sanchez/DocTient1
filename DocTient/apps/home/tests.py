@@ -166,3 +166,22 @@ class DocTientDashboardTests(TestCase):
         self.assertEqual(gauges["spo2"]["state"], "danger")
         self.assertEqual(gauges["temp"]["state"], "danger")
 
+    def test_doctor_notes_are_scoped_to_selected_patient(self):
+        other_user = User.objects.create_user(username="other_pat", password="Password123!")
+        other_pat = PatientProfile.objects.create(user=other_user, full_name="Other Patient")
+        DoctorPatientConnection.objects.create(doctor=self.doctor_profile, patient=other_pat)
+
+        self.client.login(username="test_doctor", password="Password123!")
+        self.client.post(reverse("home:home"), {
+            "action": "update_clinical_note",
+            "patient_id": str(self.patient_profile.id),
+            "observations": "Note specifically for Test Patient",
+            "recommendations": "Keep hydrated",
+        })
+        resp = self.client.get(reverse("home:home") + f"?patient_id={other_pat.id}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Note specifically for Test Patient")
+
+        resp2 = self.client.get(reverse("home:home") + f"?patient_id={self.patient_profile.id}")
+        self.assertContains(resp2, "Note specifically for Test Patient")
+

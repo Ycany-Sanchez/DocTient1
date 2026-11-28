@@ -149,12 +149,17 @@ class MedicationLog(models.Model):
 
 
 class DoctorNote(models.Model):
-    """ERD: DOCTOR_NOTES. DOCTOR_PROFILE 1-M authors."""
+    """ERD: DOCTOR_NOTES. DOCTOR_PROFILE 1-M authors, optionally scoped to a patient."""
     doctor = models.ForeignKey(
         DoctorProfile, on_delete=models.CASCADE, related_name='notes'
     )
+    patient = models.ForeignKey(
+        PatientProfile, on_delete=models.CASCADE, related_name='doctor_notes',
+        null=True, blank=True
+    )
     observations = models.TextField()
     recommendations = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = 'doctor_notes'
