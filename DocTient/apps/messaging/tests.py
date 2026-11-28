@@ -37,3 +37,11 @@ class MessagingViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Message.objects.filter(sender=self.patient_user, recipient=pat2_user).count(), 0)
 
+    def test_recipient_picker_shows_doctor_specialty_and_availability(self):
+        self.doctor.availability_status = "busy"
+        self.doctor.save()
+        self.client.login(username="pat1", password="Password123!")
+        response = self.client.get(reverse("messages:messages"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Pediatrics (Busy)")
+

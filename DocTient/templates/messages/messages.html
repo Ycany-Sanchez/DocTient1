@@ -42,7 +42,7 @@
                         <select id="recipient" name="recipient" class="input" required>
                             <option value="">Choose recipient</option>
                             {% for u in recipients %}
-                            <option value="{{ u.username }}">{{ u.username }}{% if u.doctor_profile %} ({{ u.doctor_profile.full_name }}){% elif u.patient_profile %} ({{ u.patient_profile.full_name }}){% endif %}</option>
+                            <option value="{{ u.username }}">{% if u.doctor_profile %}Dr. {{ u.doctor_profile.full_name }} — {{ u.doctor_profile.med_specialty|default:"Attending Physician" }} ({{ u.doctor_profile.availability_status|default:"available"|title }}){% elif u.patient_profile %}{{ u.patient_profile.full_name }} (@{{ u.username }}){% else %}{{ u.username }}{% endif %}</option>
                             {% endfor %}
                         </select>
                     </div>

@@ -243,7 +243,10 @@
                 <div class="guidance-item">
                     <div class="guidance-head">
                         <span class="cell-primary">{{ conn.doctor.full_name }}</span>
-                        <span class="pill">{{ conn.doctor.med_specialty|default:"Telehealth Specialist" }}</span>
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                            <span class="pill">{{ conn.doctor.med_specialty|default:"Telehealth Specialist" }}</span>
+                            <span class="pill {% if conn.doctor.availability_status == 'available' %}pos{% elif conn.doctor.availability_status == 'busy' %}warn{% endif %}">{{ conn.doctor.availability_status|default:"available"|title }}</span>
+                        </div>
                     </div>
                     {% if conn.observations %}
                     <p class="guidance-text"><strong>Assessment:</strong> {{ conn.observations }}</p>
@@ -253,6 +256,9 @@
                     {% else %}
                     <p class="guidance-empty">No care instructions posted yet.</p>
                     {% endif %}
+                    <div style="margin-top: 8px;">
+                        <a href="{% url 'messages:messages' %}?with={{ conn.doctor.user.username }}" class="btn btn-sm">Message Dr. {{ conn.doctor.full_name }}</a>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
