@@ -1,38 +1,61 @@
 from django.core.management.base import BaseCommand
-from django.db.models import Subquery
+from django.db import connection
 
-from apps.clinic.models import PatientProfile, VitalSign
+from apps.clinic.models import DoctorProfile, PatientProfile
 
 
 class Command(BaseCommand):
-    help = "Verify and print the Django ORM generated SQL for the JOIN and SUBQUERY activity."
+    help = "Print and run the SQL JOIN and SUBQUERY queries against Supabase."
 
     def handle(self, *args, **options):
-        vitals = VitalSign.objects.select_related("patient").all()
-        vital_patient_ids = VitalSign.objects.values("patient_id")
-        patients = PatientProfile.objects.filter(
-            id__in=Subquery(vital_patient_ids)
-        ).order_by("id")
+        # PART 1: SQL JOIN (matching apps/home/views.py — Doctor Dashboard Patient Directory)
+        join_sql = (
+            "SELECT p.full_name, a.username, p.date_of_birth, p.gender, a.email\n"
+            "FROM patient_profiles p\n"
+            "INNER JOIN auth_user a ON (p.user_id = a.id)\n"
+            "ORDER BY p.full_name ASC;"
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(join_sql)
+            join_rows = cursor.fetchall()
 
-        self.stdout.write(self.style.MIGRATE_HEADING("\n=== PART 1: SQL JOIN (select_related) ==="))
-        self.stdout.write("ORM: VitalSign.objects.select_related('patient').all()\n")
-        self.stdout.write(f"Generated SQL:\n{vitals.query}\n")
-        self.stdout.write(f"Matched Rows: {vitals.count()}")
-        for v in vitals[:5]:
+        self.stdout.write(self.style.MIGRATE_HEADING("\n=== PART 1: SQL JOIN (apps/home/views.py — Doctor Dashboard) ==="))
+        self.stdout.write(f"SQL Query:\n{join_sql}\n")
+        self.stdout.write(f"Matched Rows: {len(join_rows)}")
+        for full_name, username, dob, gender, email in join_rows:
             self.stdout.write(
-                f"  - Vital #{v.id} | Patient: {v.patient.full_name} | "
-                f"BP: {v.systolic}/{v.diastolic} | HR: {v.heart_rate} | Status: {v.monitoring_status}"
+                f"  - {full_name} | @{username} | DOB: {dob or '-'} | "
+                f"Gender: {gender or '-'} | Email: {email or '-'}"
             )
 
-        self.stdout.write(self.style.MIGRATE_HEADING("\n=== PART 2: SQL SUBQUERY (Subquery) ==="))
-        self.stdout.write(
-            "ORM: PatientProfile.objects.filter(id__in=Subquery(VitalSign.objects.values('patient_id')))\n"
+        # PART 2: SQL SUBQUERY (matching apps/reports/views.py — Doctor Cohort Report)
+        doctor = (
+            DoctorProfile.objects.filter(user__username="dr_santos").first()
+            or DoctorProfile.objects.first()
         )
-        self.stdout.write(f"Generated SQL:\n{patients.query}\n")
-        self.stdout.write(
-            f"Matched Patients: {patients.count()} / {PatientProfile.objects.count()} total"
+        subquery_sql = (
+            "SELECT p.full_name, p.date_of_birth, p.gender, p.contact_no, p.address\n"
+            "FROM patient_profiles p\n"
+            "WHERE p.id IN (\n"
+            "    SELECT c.patient_id\n"
+            "    FROM doctor_patient_connections c\n"
+            "    WHERE c.doctor_id = %s\n"
+            ")\n"
+            "ORDER BY p.full_name ASC;"
         )
-        for p in patients:
+        with connection.cursor() as cursor:
+            cursor.execute(subquery_sql, [doctor.id])
+            subquery_rows = cursor.fetchall()
+
+        self.stdout.write(self.style.MIGRATE_HEADING(
+            f"\n=== PART 2: SQL SUBQUERY (apps/reports/views.py — Doctor Reports for Dr. {doctor.full_name}) ==="
+        ))
+        self.stdout.write(f"SQL Query:\n{subquery_sql % doctor.id}\n")
+        self.stdout.write(
+            f"Matched Cohort Patients: {len(subquery_rows)} / {PatientProfile.objects.count()} total patients"
+        )
+        for full_name, dob, gender, contact_no, address in subquery_rows:
             self.stdout.write(
-                f"  - Patient #{p.id} | {p.full_name} | Gender: {p.gender} | Contact: {p.contact_no}"
+                f"  - {full_name} | DOB: {dob or '-'} | Gender: {gender or '-'} | "
+                f"Contact: {contact_no or '-'} | Address: {address or '-'}"
             )

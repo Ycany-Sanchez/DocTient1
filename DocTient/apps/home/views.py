@@ -533,10 +533,34 @@ def home_view(request):
     query = (request.GET.get("q") or "").strip()
     selected_id = request.GET.get("patient_id")
 
-    patients = PatientProfile.objects.select_related("user").all().order_by("full_name")
     if query:
-        patients = patients.filter(full_name__icontains=query) | patients.filter(user__username__icontains=query)
-    patients = list(patients[:50])
+        like_q = f"%{query}%"
+        patients = list(
+            PatientProfile.objects.raw(
+                """
+                SELECT p.id, p.user_id, p.full_name, a.username, p.date_of_birth, p.gender, a.email
+                FROM patient_profiles p
+                INNER JOIN auth_user a ON (p.user_id = a.id)
+                WHERE LOWER(p.full_name) LIKE LOWER(%s)
+                   OR LOWER(a.username) LIKE LOWER(%s)
+                ORDER BY p.full_name ASC
+                LIMIT 50
+                """,
+                [like_q, like_q],
+            )
+        )
+    else:
+        patients = list(
+            PatientProfile.objects.raw(
+                """
+                SELECT p.id, p.user_id, p.full_name, a.username, p.date_of_birth, p.gender, a.email
+                FROM patient_profiles p
+                INNER JOIN auth_user a ON (p.user_id = a.id)
+                ORDER BY p.full_name ASC
+                LIMIT 50
+                """
+            )
+        )
 
     triage_alert_count = 0
     for p in patients:

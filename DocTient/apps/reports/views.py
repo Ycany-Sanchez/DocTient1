@@ -392,11 +392,22 @@ def reports_view(request):
     if risk_filter not in ("all", "high", "elevated", "stable"):
         risk_filter = "all"
 
-    connections = list(
-        DoctorPatientConnection.objects.filter(doctor=doctor).select_related("patient__user")
+    patients = list(
+        PatientProfile.objects.raw(
+            """
+            SELECT p.id, p.user_id, p.full_name, p.date_of_birth, p.gender, p.contact_no, p.address
+            FROM patient_profiles p
+            WHERE p.id IN (
+                SELECT c.patient_id
+                FROM doctor_patient_connections c
+                WHERE c.doctor_id = %s
+            )
+            ORDER BY p.full_name ASC
+            """,
+            [doctor.id],
+        )
     )
-    patient_ids = [c.patient_id for c in connections]
-    patients = list(PatientProfile.objects.filter(id__in=patient_ids).select_related("user"))
+    patient_ids = [p.id for p in patients]
 
     triage_alerts = []
     elevated_patients = []
