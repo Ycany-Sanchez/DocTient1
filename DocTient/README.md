@@ -1,200 +1,78 @@
-# CRMS — Django Two-App Communication Tutorial
+# DocTient — Clinical Telehealth & Biometric Telemetry Platform
 
-A complete beginner-friendly Django project demonstrating communication and screen transitions between exactly two Django apps:
+DocTient is a role-isolated telehealth web application built with **Python Django 6.1** and **Supabase PostgreSQL**. It supports patient self-monitoring, physician cohort oversight, medication adherence tracking, clinical reporting, and doctor–patient messaging.
 
-- `students`
-- `classes`
-
-The architecture follows:
+## Architecture (Vertical Slicing)
 
 ```text
-crms/
-├── config/
-├── students/
-├── classes/
-├── templates/
-│   ├── base.html
-│   ├── students/
-│   └── classes/
-└── static/
-    └── js/
-        ├── students/
-        └── classes/
+DocTient/
+├── config/                 # Project settings, root URLs, WSGI/ASGI
+├── apps/
+│   ├── clinic/             # Core ERD models + management commands
+│   ├── login/              # Authentication views & landing UI
+│   ├── register/           # Role-based account registration (patient / doctor)
+│   ├── home/               # Role-isolated Patient & Doctor Dashboards
+│   ├── reports/            # Clinical analytics, risk stratification, CSV export
+│   ├── messaging/          # Cross-role doctor <-> patient inbox & threads
+│   ├── user_profile/       # Patient demographics/biometrics & doctor credentials
+│   └── user_settings/      # Theme (dark mode) & notification preferences
+├── templates/              # Framed Sheet clinical shell & page templates
+├── static/                 # CSS design system, canvas charting, telemetry JS
+└── supabase_schema.sql     # PostgreSQL physical ERD reference DDL
 ```
 
-## What this project demonstrates
+## Database Schema (Supabase PostgreSQL)
 
-1. Project-level URL routing with `include()`
-2. App-level URL routing
-3. URL namespaces and URL reversing
-4. Normal screen transitions:
-   - Students → Classes
-   - Classes → Students
-5. Dynamic URL parameters:
-   - `student_id`
-   - `class_id`
-6. Cross-app model relationships:
-   - `Student`
-   - `ClassRecord`
-   - `Enrollment`
-7. View → context → template
-8. GET and POST
-9. POST → Redirect → GET
-10. JavaScript `fetch()`
-11. `JsonResponse`
-12. Cross-app asynchronous communication
-13. CSRF protection for JavaScript POST
-14. Browser Network-tab debugging
+Core tables managed in `apps/clinic/models.py` alongside Django `auth_user`:
 
-## Setup
+- `patient_profiles` (1:1 with `auth_user`)
+- `doctor_profiles` (1:1 with `auth_user`)
+- `vital_signs` (1:M from `patient_profiles`)
+- `medications` (M:1 to `patient_profiles` and `doctor_profiles`)
+- `medication_logs` (1:M from `medications`)
+- `doctor_patient_connections` (M:M link with clinical observations & care plans)
+- `doctor_notes` (1:M from `doctor_profiles`)
+- `messages` (1:M sender/recipient on `auth_user`)
 
-### 1. Create and activate a virtual environment
+## Local Setup
 
-Windows:
+1. **Create and activate a virtual environment** (from `DocTient1/`):
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r DocTient/requirements.txt
+   ```
+
+2. **Configure environment variables** (`DocTient/.env`):
+
+   ```bash
+   cp DocTient/.env.example DocTient/.env
+   # Set DATABASE_URL to your Supabase PostgreSQL pooler connection string
+   ```
+
+3. **Run migrations and seed demo data**:
+
+   ```bash
+   cd DocTient
+   python manage.py migrate
+   python manage.py seed_doctient_data
+   ```
+
+4. **Start the development server**:
+
+   ```bash
+   python manage.py runserver
+   ```
+
+   Open `http://127.0.0.1:8000/login/`.
+
+## Useful Commands
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+# Run full test suite (uses isolated in-memory SQLite when DATABASE_URL is unset)
+DATABASE_URL="" python manage.py test -v 2
+
+# Print live SQL JOIN and SUBQUERY diagnostics against Supabase
+python manage.py verify_sql_activity
 ```
-
-macOS/Linux:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Apply migrations
-
-```bash
-python manage.py migrate
-```
-
-### 4. Create sample data
-
-```bash
-python manage.py seed_demo
-```
-
-The command creates sample students, classes, and enrollments.
-
-### 5. Run the server
-
-```bash
-python manage.py runserver
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000/
-```
-
-## Main routes
-
-```text
-/                       Home
-/students/              Student list
-/students/<id>/         Student detail
-/students/create/       Create student
-/students/class/<id>/   Students enrolled in a class
-
-/classes/               Class list
-/classes/<id>/          Class detail
-/classes/<id>/enroll/   Enroll a student
-/classes/<id>/students/json/  JSON endpoint
-```
-
-## Important learning flow
-
-Normal navigation:
-
-```text
-Browser
-   ↓
-URL
-   ↓
-App URL
-   ↓
-View
-   ↓
-Database
-   ↓
-Template
-   ↓
-Browser
-```
-
-JavaScript communication:
-
-```text
-JavaScript
-   ↓ fetch()
-Django URL
-   ↓
-View
-   ↓
-Database
-   ↓
-JsonResponse
-   ↓
-JavaScript
-   ↓
-DOM
-```
-
-## Cross-app examples
-
-From a Students page:
-
-```django
-{% url 'classes:list' %}
-```
-
-navigates to the Classes app.
-
-From a Classes page:
-
-```django
-{% url 'students:list' %}
-```
-
-navigates to the Students app.
-
-From a Classes detail page:
-
-```django
-{% url 'students:by_class' class_record.id %}
-```
-
-creates a URL owned by the Students app, passing the class ID.
-
-## Notes for students
-
-A Django app does not directly "open" another app's screen.
-
-The browser requests a URL. Django resolves that URL to the receiving app's view.
-
-For example:
-
-```text
-Classes template
-    ↓
-/students/class/5/
-    ↓
-students.urls
-    ↓
-students_by_class()
-    ↓
-HTML response
-    ↓
-Browser
-```
-
-That is the core concept this project is designed to teach.
