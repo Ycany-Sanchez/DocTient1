@@ -110,6 +110,24 @@
                         <input id="id_address" type="text" name="address" class="input" value="{{ patient.address|default:'' }}" placeholder="City, Province">
                     </div>
                 </div>
+
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="id_dob">Date of birth</label>
+                        <input id="id_dob" type="date" name="date_of_birth" class="input" value="{% if patient.date_of_birth %}{{ patient.date_of_birth|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    <div class="field">
+                        <label for="id_height_cm">Height (cm)</label>
+                        <input id="id_height_cm" type="number" step="0.1" min="50" max="260" name="height_cm" class="input" value="{{ patient.height_cm|default:'' }}" placeholder="e.g. 170.0">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="field">
+                        <label for="id_weight_kg">Baseline weight (kg)</label>
+                        <input id="id_weight_kg" type="number" step="0.1" min="10" max="400" name="weight_kg" class="input" value="{{ patient.weight_kg|default:'' }}" placeholder="e.g. 68.5">
+                    </div>
+                </div>
             </div>
         </div>
         {% endif %}

@@ -67,3 +67,24 @@ class ProfileViewTests(TestCase):
         self.doctor.refresh_from_db()
         self.assertEqual(self.doctor.full_name, "Dr. Updated Specialist")
         self.assertEqual(self.doctor.med_specialty, "Cardiothoracic Surgery")
+
+    def test_patient_can_update_biometrics_for_bmi(self):
+        self.client.login(username="pat_user", password="Password123!")
+        response = self.client.post(
+            reverse("profile:profile"),
+            {
+                "full_name": "Patient Sample",
+                "date_of_birth": "1994-06-15",
+                "height_cm": "175.0",
+                "weight_kg": "70.0",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.patient.refresh_from_db()
+        self.assertEqual(str(self.patient.date_of_birth), "1994-06-15")
+        self.assertEqual(float(self.patient.height_cm), 175.0)
+        self.assertEqual(float(self.patient.weight_kg), 70.0)
+
+        rep = self.client.get(reverse("reports:reports"))
+        self.assertEqual(rep.status_code, 200)
+        self.assertEqual(rep.context["bmi_value"], 22.9)
